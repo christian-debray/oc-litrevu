@@ -28,12 +28,6 @@ install the required packages
 
     pip install -r requirements.txt
 
-## Setup Django
-
-Migrate the database:
-
-    python manage.py migrate
-
 ## Run the app locally
 
 Start django's local server from a terminal:
@@ -44,3 +38,12 @@ Start django's local server from a terminal:
 
 The app will be available at adress http://127.0.0.1:8000/litrevu/
 
+## Manage the app as superuser
+
+create a superadmin account:
+
+    python manage.py createsuperuser
+
+then run the local server, and go to :
+
+http://127.0.0.1:8000/litrevu/admin
