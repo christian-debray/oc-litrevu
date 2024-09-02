@@ -54,6 +54,12 @@ ROOT_URLCONF = 'litrevu.urls'
 
 TEMPLATES = [
     {
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {}
+    },
+    {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
@@ -100,8 +106,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
- # Custom User model
- # see https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#auth-custom-user
+# Custom User model
+# see https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#auth-custom-user
 AUTH_USER_MODEL = "app.User"
 
 
