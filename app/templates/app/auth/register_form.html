@@ -1,0 +1,13 @@
+<form action="/litrevu/register" method="POST">
+    {% csrf_token %}
+    {% if register_form.errors %}
+        <ul class="errorlist">
+        {% for err in register_form.errors %}
+            <li><strong>{{ err|escape}}</strong></li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {{ register_form.as_p }}
+    <input type="submit" value="s'inscrire">
+    <a href="/litrevu/">Je suis déjà inscrit</a>
+</form>

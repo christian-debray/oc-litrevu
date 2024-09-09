@@ -1,0 +1,14 @@
+{% extends "app/base.html" %}
+
+{%block title %}LIT-review{% endblock %}
+{%block content %}
+    <h1>LIT Review</h1>
+    <div class="row">
+        <div class="col">
+            <a href="/litrevu/register">Inscription</a>
+        </div>
+        <div class="col">
+            {% include "app/auth/auth_form.html" %}
+        </div>
+    </div>
+{% endblock %}
