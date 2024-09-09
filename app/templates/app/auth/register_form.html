@@ -3,7 +3,7 @@
     {% if register_form.errors %}
         <ul class="errorlist">
         {% for err in register_form.errors %}
-            <li><strong>{{ err|escape}}</strong></li>
+            <li><strong>{{ err|escape }}</strong></li>
         {% endfor %}
         </ul>
     {% endif %}

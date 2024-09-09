@@ -31,15 +31,17 @@ def register(request: HttpRequest):
     if request.method == "POST":
         register_form = RegisterForm(request.POST)
         if register_form.is_valid():
-            username = register_form.cleaned_data.get("login")
+            username = register_form.cleaned_data.get("username")
             password = register_form.cleaned_data.get("password")
             try:
                 user = User.objects.create_user(username=username, password=password)
                 user.save()
                 login(request=request, user=user)
-                redirect("feed")
+                return redirect("feed")
             except IntegrityError as e:
-                register_form.add_error(field="login", error=e)
+                register_form.add_error(field="username", error=e)
+            except Exception as e:
+                register_form.add_error(field=None, error=e)
     else:
         register_form = RegisterForm()
     context['register_form'] = register_form
@@ -53,12 +55,12 @@ def auth(request: HttpRequest):
     if request.method == "POST":
         auth_form = AuthForm(request.POST)
         if auth_form.is_valid():
-            username = auth_form.cleaned_data.get("login")
+            username = auth_form.cleaned_data.get("username")
             password = auth_form.cleaned_data.get("password")
             user = authenticate(request=request, username=username, password=password)
             if user is not None:
                 login(request=request, user=user)
-                redirect("feed")
+                return redirect("feed")
             else:
                 auth_form.add_error(field=None, error=_("Wrong login"))
     else:
@@ -71,4 +73,6 @@ def feed(request: HttpRequest):
     """Display the user's feed (todo).
     """
     # TODO: implement the user feed
+    if not (request.user and request.user.is_authenticated):
+        return redirect("auth")
     return HttpResponse(content=f"Welcome {request.user}")
