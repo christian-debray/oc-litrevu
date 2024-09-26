@@ -2,29 +2,12 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core import validators
-
-# Password requirement:
-#  - at least 8 characters
-#  - containing at least one uppercase letter (A-Z)
-#  - containing at least one lowercase letter (a-z)
-#  - containing at least one digit (0-9)
-#  - containing at least one special character (#?!@$%^&*-)
-PASSWORD_REGEX = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
 
 
 class User(AbstractUser):
     """Our custom User class
     see https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#auth-custom-user
     """
-    password = models.CharField(
-        max_length=128,
-        validators=[
-            validators.ProhibitNullCharactersValidator,
-            validators.RegexValidator(regex=PASSWORD_REGEX),
-            validators.MaxLengthValidator(128)
-        ],
-    )
 
 
 class Ticket(models.Model):
