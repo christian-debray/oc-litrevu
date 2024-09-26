@@ -1,0 +1,15 @@
+{% autoescape on %}
+<div class="container border mb-3">
+    {% include "app/components/time_published.html" with time_published=review.time_created %}
+    {% if review.user.username != username %}
+        <p>{{ticket.user}} a osté une critique</p>
+    {% else %}
+        <p>Vous avez posté une critique</p>
+    {% endif %}
+    <p><strong>{{review.headline}}</strong> - {{review.rating}}/5</p>
+    <div>
+        {{review.body|default:"-"|linebreaks}}
+    </div>
+    {% include "app/components/ticket_request_view.html" with ticket=review.ticket %}
+</div>
+{% endautoescape %}

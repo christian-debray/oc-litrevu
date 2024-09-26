@@ -7,6 +7,7 @@ from django.contrib.auth import login, authenticate
 from .forms import AuthForm, RegisterForm
 from django.utils.translation import gettext as _
 from django.db import IntegrityError
+from . import feed as feed_tools
 import logging
 
 logger = logging.getLogger()
@@ -77,7 +78,14 @@ def feed(request: HttpRequest):
     # TODO: implement the user feed
     if not (request.user and request.user.is_authenticated):
         return redirect("auth")
+    # followed_users = feed_tools.followed_users(request.user)
+    # reviews = feed_tools.feed_reviews(user=request.user)
+    # tickets = feed_tools.feed_reviews(user=request.user)
     context = {
         "username": request.user.username,
+        "followed_users": feed_tools.followed_users(request.user),
+        "feed_entries": feed_tools.feed_entries(request.user),
+        # "reviews": feed_tools.feed_reviews(user=request.user),
+        # "tickets": feed_tools.feed_tickets(user=request.user)
     }
     return render(request, "app/feed/feed.html", context)

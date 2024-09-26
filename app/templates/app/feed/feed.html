@@ -1,0 +1,25 @@
+{% extends "app/base.html" %}
+{% block title%}User {{ username }}'s feed{% endblock %}
+{% block content %}
+<h1>Welcome {{ username }}</h1>
+
+<div>
+    <h2>Users you are following</h2>
+    <ul>
+        {% for u in followed_users %}
+            <li>{{u}}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div>
+    <h2>Your feed</h2>
+    {% for entry in feed_entries %}
+        {% if entry.type == "review" %}
+            {% include "app/components/review_view.html" with review=entry.review %}
+        {% elif  entry.type == "ticket" %}
+            {% include "app/components/ticket_request_view.html" with ticket=entry.ticket %}
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

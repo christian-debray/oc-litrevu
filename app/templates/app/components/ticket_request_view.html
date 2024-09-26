@@ -1,0 +1,17 @@
+{% autoescape on %}
+<div class="container border mb-3">
+    {% include "app/components/time_published.html" with time_published=ticket.time_created %}
+    {% if ticket.user.username != username %}
+        <p>{{ticket.user}} a demandé une critique</p>
+    {% else %}
+        <p>Vous avez demandé une critique</p>
+    {% endif %}
+    <p><strong>{{ticket.title}}</strong></p>
+    {% if ticket.description %}
+        <p>{{ticket.description}}</p>
+    {% endif %}
+    {% if ticket.image %}
+        {{ticket.image}}
+    {% endif %}
+</div>
+{% endautoescape %}
