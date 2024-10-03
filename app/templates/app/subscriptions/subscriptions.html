@@ -1,0 +1,22 @@
+{% extends "app/base.html" %}
+{% block title%}User {{ username }}'s subscriptions{% endblock %}
+{% block content %}
+
+<h1>Suivre d'autres utilisateurs</h1>
+<div>
+    <h2>Abonnements</h2>
+    <ul>
+    {% for u in following %}
+        <li>{{u.username}} <a href="{% url 'cancel_subscription' u.user_id %}">désabonner</a></li>
+    {% endfor %}
+    </ul>
+<div>
+    <h2>Abonnés</h2>
+    <ul>
+        {% for u in followers %}
+            <li>{{u.username}}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}

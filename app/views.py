@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect
 
 # Create your views here.
-from django.http import HttpRequest
-from .models import User
+from django.http import HttpRequest, HttpResponse
+from .models import User, UserFollows
 from django.contrib.auth import login, authenticate, logout as django_logout
+from django.contrib.auth.decorators import login_required
 from .forms import AuthForm, RegisterForm
 from django.utils.translation import gettext as _
 from django.db import IntegrityError
 from . import feed as feed_tools
+from . import subscriptions as subscription_tools
 import logging
 
 logger = logging.getLogger()
@@ -79,13 +81,50 @@ def logout(request: HttpRequest):
     return redirect("index")
 
 
+@login_required
 def feed(request: HttpRequest):
     """Display the user's feed (todo)."""
-    if not (request.user and request.user.is_authenticated):
-        return redirect("auth")
     context = {
         "username": request.user.username,
         "followed_users": feed_tools.followed_users(request.user),
         "feed_entries": feed_tools.feed_entries(request.user)
     }
     return render(request, "app/feed/feed.html", context)
+
+
+@login_required
+def subscriptions_view(request: HttpRequest):
+    """Display the subscription page to subscribe to other users.
+    """
+    context = {
+        'following': [],
+        'followers': []
+    }
+    for u in subscription_tools.followed_users(request.user):
+        context['following'].append({
+            'user_id': u.pk,
+            'username': u.username
+        })
+    for u in subscription_tools.followers(request.user):
+        context['followers'].append({
+            'username': u.username
+        })
+    return render(request, "app/subscriptions/subscriptions.html", context=context)
+
+
+@login_required
+def subscription_follow(request: HttpRequest, follow_user_id: int):
+    """Follow a user
+    """
+
+
+@login_required
+def subscription_cancel(request: HttpRequest, followed_user_id: int):
+    """Cancel subscription to another user's posts.
+    """
+    followed = User.objects.get(pk=followed_user_id)
+    followedR = UserFollows.objects.get(user=request.user, followed_user_id=followed_user_id)
+    if followed:
+        return HttpResponse(f"cancel subscription #{followedR.pk} to {followed.username}")
+    else:
+        return HttpResponse(f"Subscription to {followed_user_id} not found !")

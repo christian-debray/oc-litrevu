@@ -1,5 +1,12 @@
-from .models import Ticket, Review, User, UserFollows
+from .models import Ticket, Review, User
 from django.db.models import QuerySet, Count
+from .subscriptions import followed_users
+
+
+def feed_posts(user: User) -> list[dict]:
+    """
+    """
+    # @todo
 
 
 def feed_entries(user: User) -> list[dict]:
@@ -32,7 +39,7 @@ def feed_entries(user: User) -> list[dict]:
         }
         feed.append(entry)
     feed.sort(key=lambda x: x['time_created'], reverse=True)
-    return feed    
+    return feed
 
 
 def feed_tickets(user: User) -> QuerySet[Ticket]:
@@ -50,9 +57,3 @@ def feed_reviews(user: User) -> QuerySet[Review]:
     u_list = followed_users(user) + [user]
     # select_related on user to avoid N+1 problem when fecthing author details...
     return Review.objects.filter(user__in=u_list).select_related("user")
-
-
-def followed_users(user: User) -> list[User]:
-    """List users followed by the current user.
-    """
-    return [x.followed_user for x in UserFollows.objects.filter(user=user)]
