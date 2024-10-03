@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 # Create your views here.
 from django.http import HttpRequest
 from .models import User
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout as django_logout
 from .forms import AuthForm, RegisterForm
 from django.utils.translation import gettext as _
 from django.db import IntegrityError
@@ -18,11 +18,10 @@ def index(request: HttpRequest):
     """Default landing page: display auhtentication form and link to registration,
     or redirect to feed if user is authenticated.
     """
-    if request.user.is_authenticated:
-        redirect("feed")
-    context = {}
-    context["auth_form"] = AuthForm()
-    return render(request, "app/index.html", context)
+    if not request.user.is_authenticated:
+        return redirect("auth")
+    else:
+        return redirect("feed")
 
 
 def register(request: HttpRequest):
@@ -71,6 +70,13 @@ def auth(request: HttpRequest):
         auth_form = AuthForm()
     context["auth_form"] = auth_form
     return render(request, "app/index.html", context)
+
+
+def logout(request: HttpRequest):
+    """disconnect current user and redirect to index
+    """
+    django_logout(request)
+    return redirect("index")
 
 
 def feed(request: HttpRequest):
