@@ -11,8 +11,8 @@ def feed_entries(user: User) -> list[dict]:
     a new review for a Ticket or an existing Review.
     """
     u_list = followed_users(user) | User.objects.filter(pk=user.pk)
-    tickets = feed_tickets(user=user, following=u_list)
-    reviews = feed_reviews(user=user, following=u_list)
+    tickets = feed_tickets(user=user, following=u_list).select_related("user")
+    reviews = feed_reviews(user=user, following=u_list).select_related("user").select_related("ticket")
     ticket_posts_map = {x.pk: feed_post_dict(x, "TICKET") for x in tickets}
     feed = list(ticket_posts_map.values())
     for r in reviews:
@@ -58,7 +58,6 @@ def feed_tickets(user: User, following=None) -> QuerySet[Ticket]:
     tickets = (
         Ticket.objects.annotate(total_reviews=Count("review"), own_reviews=own_reviews_q)
         .filter(user__in=u_list)
-        .select_related("user")
     )
     return tickets
 
@@ -68,8 +67,4 @@ def feed_reviews(user: User, following=None) -> QuerySet[Review]:
     u_list = following or (followed_users(user) | User.objects.filter(pk=user.pk))
     # always include reviews related ot the user's own tickets
     reviews = Review.objects.filter(user__in=u_list) | Review.objects.filter(ticket__user=user)
-    reviews = (
-        Review.objects.filter(user__in=u_list)
-        .union(Review.objects.filter(ticket__in=Ticket.objects.filter(user=user)))
-    )
     return reviews
