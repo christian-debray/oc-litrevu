@@ -75,17 +75,11 @@ def auth(request: HttpRequest):
 
 def feed(request: HttpRequest):
     """Display the user's feed (todo)."""
-    # TODO: implement the user feed
     if not (request.user and request.user.is_authenticated):
         return redirect("auth")
-    # followed_users = feed_tools.followed_users(request.user)
-    # reviews = feed_tools.feed_reviews(user=request.user)
-    # tickets = feed_tools.feed_reviews(user=request.user)
     context = {
         "username": request.user.username,
         "followed_users": feed_tools.followed_users(request.user),
-        "feed_entries": feed_tools.feed_entries(request.user),
-        # "reviews": feed_tools.feed_reviews(user=request.user),
-        # "tickets": feed_tools.feed_tickets(user=request.user)
+        "feed_entries": feed_tools.feed_entries(request.user)
     }
     return render(request, "app/feed/feed.html", context)

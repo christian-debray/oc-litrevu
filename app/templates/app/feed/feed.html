@@ -16,9 +16,9 @@
     <h2>Your feed</h2>
     {% for entry in feed_entries %}
         {% if entry.type == "review" %}
-            {% include "app/components/review_view.html" with review=entry.review %}
+            {% include "app/components/review_view.html" with review=entry.review can_review=entry.can_review %}
         {% elif  entry.type == "ticket" %}
-            {% include "app/components/ticket_request_view.html" with ticket=entry.ticket %}
+            {% include "app/components/ticket_request_view.html" with ticket=entry.ticket can_review=entry.can_review %}
         {% endif %}
     {% endfor %}
 </div>

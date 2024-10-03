@@ -2,7 +2,7 @@
 <div class="container border mb-3">
     {% include "app/components/time_published.html" with time_published=review.time_created %}
     {% if review.user.username != username %}
-        <p>{{ticket.user}} a osté une critique</p>
+        <p>{{review.user}} a posté une critique</p>
     {% else %}
         <p>Vous avez posté une critique</p>
     {% endif %}
@@ -10,6 +10,6 @@
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>
-    {% include "app/components/ticket_request_view.html" with ticket=review.ticket %}
+    {% include "app/components/ticket_request_view.html" with ticket=review.ticket can_review=can_review %}
 </div>
 {% endautoescape %}

@@ -145,11 +145,19 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": "general.log",
         },
+        "db_file": {
+            "class": "logging.FileHandler",
+            "filename": "db.log"
+        }
     },
     "loggers": {
         "": {
             "level": "DEBUG",
             "handlers": ["file"]
+        },
+        "django.db.backends": {
+            "level": "DEBUG",
+            "handlers": ["db_file"]
         }
     }
 }

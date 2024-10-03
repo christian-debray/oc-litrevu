@@ -13,5 +13,9 @@
     {% if ticket.image %}
         {{ticket.image}}
     {% endif %}
+    <p>{{ticket.num_reviews}} reviews</p>
+    {% if can_review %}
+        <button>Créer une critique</button>
+    {% endif %}
 </div>
 {% endautoescape %}
