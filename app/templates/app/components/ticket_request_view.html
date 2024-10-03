@@ -1,20 +1,20 @@
 {% autoescape on %}
 <div class="container border mb-3">
     {% include "app/components/time_published.html" with time_published=ticket.time_created %}
-    {% if ticket.user.username != username %}
-        <p>{{ticket.user}} a demandé une critique</p>
+    {% if ticket.author_name != username %}
+        <p>{{ticket.author_name}} a demandé une critique</p>
     {% else %}
         <p>Vous avez demandé une critique</p>
     {% endif %}
     <p><strong>{{ticket.title}}</strong></p>
-    {% if ticket.description %}
-        <p>{{ticket.description}}</p>
+    {% if ticket.body %}
+        <p>{{ticket.body}}</p>
     {% endif %}
     {% if ticket.image %}
         {{ticket.image}}
     {% endif %}
     <p>{{ticket.num_reviews}} reviews</p>
-    {% if can_review %}
+    {% if ticket.can_review %}
         <button>Créer une critique</button>
     {% endif %}
 </div>

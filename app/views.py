@@ -86,7 +86,6 @@ def feed(request: HttpRequest):
     """Display the user's feed (todo)."""
     context = {
         "username": request.user.username,
-        "followed_users": feed_tools.followed_users(request.user),
         "feed_entries": feed_tools.feed_entries(request.user)
     }
     return render(request, "app/feed/feed.html", context)

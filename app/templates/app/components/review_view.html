@@ -1,15 +1,15 @@
 {% autoescape on %}
 <div class="container border mb-3">
     {% include "app/components/time_published.html" with time_published=review.time_created %}
-    {% if review.user.username != username %}
-        <p>{{review.user}} a posté une critique</p>
+    {% if review.author_name != username %}
+        <p>{{review.author_name}} a posté une critique</p>
     {% else %}
         <p>Vous avez posté une critique</p>
     {% endif %}
-    <p><strong>{{review.headline}}</strong> - {{review.rating}}/5</p>
+    <p><strong>{{review.title}}</strong> - {{review.rating}}/5</p>
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>
-    {% include "app/components/ticket_request_view.html" with ticket=review.ticket can_review=can_review %}
+    {% include "app/components/ticket_request_view.html" with ticket=review.related_ticket%}
 </div>
 {% endautoescape %}
