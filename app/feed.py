@@ -5,18 +5,20 @@ from .subscriptions import followed_users
 
 def feed_entries(user: User) -> list[dict]:
     """Returns a list of feed entries, sorted by date, descending.
-    A feed entry is either a Review, or a Ticket requesting a review.
+    A feed entry is a dict representing either a Review, or a Ticket requesting a review.
 
-    An additional boolean can_review field is set to True if the current user can create
-    a new review for a Ticket or an existing Review.
+    See feed_post_dict() method for a list of available dict entries.
     """
     u_list = followed_users(user) | User.objects.filter(pk=user.pk)
+    # performance: reduce hits on DB by selecting related user and ticket objects.
     tickets = feed_tickets(user=user, following=u_list).select_related("user")
     reviews = feed_reviews(user=user, following=u_list).select_related("user").select_related("ticket")
     ticket_posts_map = {x.pk: feed_post_dict(x, "TICKET") for x in tickets}
     feed = list(ticket_posts_map.values())
     for r in reviews:
         review_post = feed_post_dict(r, "REVIEW")
+        # performance hack: bind each review to the ticket we'v already fetched just before
+        # so as to avoid N+1 queries when displaying a review and the requesting ticket.
         review_post['related_ticket'] = ticket_posts_map.get(r.ticket.pk)
         feed.append(review_post)
     feed.sort(
@@ -27,7 +29,8 @@ def feed_entries(user: User) -> list[dict]:
 
 
 def feed_post_dict(obj: Ticket | Review, content_type: str = None) -> dict:
-    """Transform a review or a ticket into a standardized dict to use in templates."""
+    """Transform a review or a ticket into a standardized dict to use in templates.
+    """
     content_type = content_type or ("TICKET" if isinstance(obj, Ticket) else "REVIEW")
     post = {
         "id": obj.pk,
@@ -63,8 +66,9 @@ def feed_tickets(user: User, following=None) -> QuerySet[Ticket]:
 
 
 def feed_reviews(user: User, following=None) -> QuerySet[Review]:
-    """Returns a collection of reviews followed by the current user."""
+    """Returns a collection of reviews followed by the current user.
+    This always includes reviews requested by the current user, regardless of the review's author.
+    """
     u_list = following or (followed_users(user) | User.objects.filter(pk=user.pk))
-    # always include reviews related ot the user's own tickets
     reviews = Review.objects.filter(user__in=u_list) | Review.objects.filter(ticket__user=user)
     return reviews
