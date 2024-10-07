@@ -3,13 +3,11 @@ from django.shortcuts import render, redirect
 # Create your views here.
 from django.http import HttpRequest
 from .models import User
-from django.contrib.auth import login, authenticate, logout as django_logout
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import AuthForm, RegisterForm
 from . import forms
 from django.utils.translation import gettext as _
-from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from . import feed as feed_tools
 from . import subscriptions as subscription_tools
@@ -27,64 +25,6 @@ def index(request: HttpRequest):
         return redirect("auth")
     else:
         return redirect("feed")
-
-
-def register(request: HttpRequest):
-    """Register a new user and redirect to user feed on success."""
-    context = {}
-    if request.method == "POST":
-        register_form = RegisterForm(request.POST)
-        if register_form.is_valid():
-            username = register_form.cleaned_data.get("username")
-            password = register_form.cleaned_data.get("password")
-            logger.debug(
-                f"registration form is valid: username={username}, password={password}"
-            )
-            try:
-                user = User.objects.create_user(username=username, password=password)
-                user.save()
-                login(request=request, user=user)
-                return redirect("feed")
-            except IntegrityError as e:
-                register_form.add_error(field="username", error=e)
-            except Exception as e:
-                register_form.add_error(field=None, error=e)
-        else:
-            logger.debug(
-                f"registration form is NOT valid: {register_form.errors.as_text()}"
-            )
-    else:
-        register_form = RegisterForm()
-    context["register_form"] = register_form
-    return render(request, "app/auth/register.html", context)
-
-
-def auth(request: HttpRequest):
-    """Autenticate an existing user and redirect to user feed on success."""
-    context = {}
-    if request.method == "POST":
-        auth_form = AuthForm(request.POST)
-        if auth_form.is_valid():
-            username = auth_form.cleaned_data.get("username")
-            password = auth_form.cleaned_data.get("password")
-            user = authenticate(request=request, username=username, password=password)
-            if user is not None:
-                login(request=request, user=user)
-                return redirect("feed")
-            else:
-                auth_form.add_error(field=None, error=_("Wrong login"))
-        else:
-            auth_form.add_error(field=None, error="Invalid data")
-    else:
-        auth_form = AuthForm()
-    context["auth_form"] = auth_form
-    return render(request, "app/index.html", context)
-
-
-def logout(request: HttpRequest):
-    """disconnect current user and redirect to index"""
-    django_logout(request)
-    return redirect("index")
 
 
 @login_required
@@ -110,7 +50,8 @@ def subscriptions(request: HttpRequest):
     context = {
         "subscribe_form": subscribe_form,
         "following": following,
-        "followers": followers
+        "followers": followers,
+        "username": request.user.username
     }
     return render(request, "app/subscriptions/subscriptions.html", context=context)
 

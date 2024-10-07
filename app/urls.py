@@ -1,12 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("auth", views.auth, name="auth"),
-    path("register", views.register, name="register"),
-    path("logout", views.logout, name="logout"),
+    path('account/', include("my_auth.urls")),
     path("feed", views.feed, name="feed"),
     path("subscriptions", views.subscriptions, name="subscriptions"),
     path("subscriptions", views.subscriptions, name="add_subscription"),

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
+    'my_auth',
     'bootstrap5',
     'debug_toolbar',
 ]
@@ -58,7 +59,7 @@ ROOT_URLCONF = 'litrevu.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -164,7 +165,7 @@ LOGGING = {
     }
 }
 
-LOGIN_URL = "/litrevu/auth"
+LOGIN_URL = "/litrevu/account/login"
 
 # define INTERNAL_IP for the debug_toolbar
 INTERNAL_IPS = [
