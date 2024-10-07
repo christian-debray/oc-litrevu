@@ -5,10 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from . import forms
 from django.utils.translation import gettext as _
-from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from . import feed as feed_tools
 from . import subscriptions as subscription_tools
+from . import posts as posts_tools
 import logging
 
 logger = logging.getLogger()
@@ -98,13 +98,26 @@ def subscription_cancel(request: HttpRequest, followed_user_id: int) -> HttpResp
 def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
     """Edit an existing ticket or create a new ticket.
     """
-    if ticket_id:
-        ticket_instance = get_object_or_404(Ticket, pk=ticket_id)
-    else:
-        ticket_instance = None
+    ticket_instance = None
     if request.POST.get("action") == "edit_ticket":
-        form = _handle_ticket_form(request, ticket_instance)
+        form = forms.EditTicketForm(request.POST)
+        if formdata := posts_tools.handle_ticket_form(form):
+            if ticket_id := request.POST.get("ticket_id"):
+                ticket_instance = posts_tools.update_ticket(request, request.user, ticket_id, **formdata)
+                action = "Updated"
+            else:
+                ticket_instance = posts_tools.create_ticket(request, request.user, **formdata)
+                action = "Created"
+        if ticket_instance:
+            success_msg = _(f"{action} Ticket #%(ticket_id)i: %(ticket_title)s") % {
+                    "ticket_id": ticket_instance.pk,
+                    "ticket_title": ticket_instance.title
+                }
+            messages.success(request, success_msg)
+            return redirect(request.POST.get('next', "feed"))
     else:
+        if ticket_id:
+            ticket_instance = get_object_or_404(Ticket, pk=ticket_id, user=request.user)
         form = forms.EditTicketForm(instance=ticket_instance)
     context = {
         'username': request.user.username,
@@ -112,9 +125,3 @@ def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
         'ticket_id': ticket_id
     }
     return render(request, "app/posts/edit_ticket.html", context)
-
-
-def _handle_ticket_form(request: HttpRequest, ticket_instance: Ticket = None) -> forms.EditTicketForm:
-    """Handles a ticket form and updates/creates a ticket if form is valid.
-    """
-    return forms.EditTicketForm(request.POST)
