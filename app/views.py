@@ -37,19 +37,23 @@ def feed(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def subscriptions(request: HttpRequest) -> forms.SubscribeToUserForm:
-    """Display the subscription page to subscribe to other users.
-    """
+    """Display the subscription page to subscribe to other users."""
     if request.method == "POST":
         subscribe_form = _handle_subscription_form(request)
     else:
         subscribe_form = forms.SubscribeToUserForm()
-    following = [{"user_id": u.pk, "username": u.username} for u in subscription_tools.followed_users(request.user)]
-    followers = [{"username": u.username} for u in subscription_tools.followers(request.user)]
+    following = [
+        {"user_id": u.pk, "username": u.username}
+        for u in subscription_tools.followed_users(request.user)
+    ]
+    followers = [
+        {"username": u.username} for u in subscription_tools.followers(request.user)
+    ]
     context = {
         "subscribe_form": subscribe_form,
         "following": following,
         "followers": followers,
-        "username": request.user.username
+        "username": request.user.username,
     }
     return render(request, "app/subscriptions/subscriptions.html", context=context)
 
@@ -96,32 +100,48 @@ def subscription_cancel(request: HttpRequest, followed_user_id: int) -> HttpResp
 
 @login_required
 def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
-    """Edit an existing ticket or create a new ticket.
-    """
+    """Edit an existing ticket or create a new ticket."""
     ticket_instance = None
     if request.POST.get("action") == "edit_ticket":
         form = forms.EditTicketForm(request.POST)
         if formdata := posts_tools.handle_ticket_form(form):
             if ticket_id := request.POST.get("ticket_id"):
-                ticket_instance = posts_tools.update_ticket(request, request.user, ticket_id, **formdata)
+                ticket_instance = posts_tools.update_ticket(
+                    request, request.user, ticket_id, **formdata
+                )
                 action = "Updated"
             else:
-                ticket_instance = posts_tools.create_ticket(request, request.user, **formdata)
+                ticket_instance = posts_tools.create_ticket(
+                    request, request.user, **formdata
+                )
                 action = "Created"
         if ticket_instance:
             success_msg = _(f"{action} Ticket #%(ticket_id)i: %(ticket_title)s") % {
-                    "ticket_id": ticket_instance.pk,
-                    "ticket_title": ticket_instance.title
-                }
+                "ticket_id": ticket_instance.pk,
+                "ticket_title": ticket_instance.title,
+            }
             messages.success(request, success_msg)
-            return redirect(request.POST.get('next', "feed"))
+            return redirect(request.POST.get("next", "feed"))
     else:
         if ticket_id:
             ticket_instance = get_object_or_404(Ticket, pk=ticket_id, user=request.user)
         form = forms.EditTicketForm(instance=ticket_instance)
     context = {
-        'username': request.user.username,
-        'ticket_form': form,
-        'ticket_id': ticket_id
+        "username": request.user.username,
+        "ticket_form": form,
+        "ticket_id": ticket_id,
     }
     return render(request, "app/posts/edit_ticket.html", context)
+
+
+@login_required
+def delete_ticket(request: HttpRequest, ticket_id: int):
+    """Deletes a ticket belonging to the current user."""
+    ticket: Ticket = get_object_or_404(Ticket, pk=ticket_id, user=request.user)
+    ticket.delete()
+    messages.success(
+        request,
+        _("Ticket #%(ticket_id)i deleted: %(ticket_title)s")
+        % {"ticket_id": ticket_id, "ticket_title": ticket.title},
+    )
+    return redirect("feed")

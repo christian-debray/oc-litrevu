@@ -11,5 +11,6 @@ urlpatterns = [
     path("subscriptions/cancel/<int:followed_user_id>", views.subscription_cancel, name="cancel_subscription"),
     path("posts/tickets/new", views.edit_ticket, name="new_ticket"),
     path("posts/tickets/edit/<int:ticket_id>", views.edit_ticket, name="edit_ticket"),
-    path("posts/tickets/update", views.edit_ticket, name="update_ticket")
+    path("posts/tickets/update", views.edit_ticket, name="update_ticket"),
+    path("posts/tickets/delete/<int:ticket_id>", views.delete_ticket, name="delete_ticket")
 ]
