@@ -1,0 +1,10 @@
+{% extends "app/base.html" %}
+{% block title %}{% if ticket_id %}Editer{% else %}Créer{% endif %} un ticket{% endblock %}
+{% block content %}
+    <h1>{% if ticket_id %}Editer{% else %}Créer{% endif %} un ticket</h1>
+    <form action="{% url "update_ticket" %}" method="POST">
+        {% csrf_token %}
+        {% include "app/posts/ticket_form_fields.html" %}
+        <button type="submit" name="action" value="edit_ticket">Envoyer</button>
+    </form>
+{% endblock %}

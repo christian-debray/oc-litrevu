@@ -2,7 +2,7 @@
 {% block title%}User {{ username }}'s feed{% endblock %}
 {% block content %}
 <div class="flex-row">
-    <a href="#">Demander une critique</a>
+    <a href="{% url "new_ticket" %}">Demander une critique</a>
     <a href="#">Créer une critique</a>
 </div>
 <div>

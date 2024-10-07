@@ -1,5 +1,6 @@
 from django import forms
 from django.core import validators
+from . import models
 
 
 class SubscribeToUserForm(forms.Form):
@@ -10,3 +11,9 @@ class SubscribeToUserForm(forms.Form):
         required=True,
         validators=[validators.ProhibitNullCharactersValidator, validators.MaxLengthValidator(150)],
     )
+
+
+class EditTicketForm(forms.ModelForm):
+    class Meta:
+        model = models.Ticket
+        fields = ["title", "description", "image"]

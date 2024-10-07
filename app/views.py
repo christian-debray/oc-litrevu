@@ -1,13 +1,11 @@
-from django.shortcuts import render, redirect
-
-# Create your views here.
-from django.http import HttpRequest
-from .models import User
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpRequest, HttpResponse
+from .models import User, Ticket
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from . import forms
 from django.utils.translation import gettext as _
+from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from . import feed as feed_tools
 from . import subscriptions as subscription_tools
@@ -17,7 +15,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
-def index(request: HttpRequest):
+def index(request: HttpRequest) -> HttpResponse:
     """Default landing page: display auhtentication form and link to registration,
     or redirect to feed if user is authenticated.
     """
@@ -28,7 +26,7 @@ def index(request: HttpRequest):
 
 
 @login_required
-def feed(request: HttpRequest):
+def feed(request: HttpRequest) -> HttpResponse:
     """Display the user's feed (todo)."""
     context = {
         "username": request.user.username,
@@ -38,7 +36,7 @@ def feed(request: HttpRequest):
 
 
 @login_required
-def subscriptions(request: HttpRequest):
+def subscriptions(request: HttpRequest) -> forms.SubscribeToUserForm:
     """Display the subscription page to subscribe to other users.
     """
     if request.method == "POST":
@@ -78,7 +76,7 @@ def _handle_subscription_form(request: HttpRequest):
 
 
 @login_required
-def subscription_cancel(request: HttpRequest, followed_user_id: int):
+def subscription_cancel(request: HttpRequest, followed_user_id: int) -> HttpResponse:
     """Cancel subscription to another user's posts."""
     try:
         followed_username = User.objects.get(pk=followed_user_id).username
@@ -94,3 +92,29 @@ def subscription_cancel(request: HttpRequest, followed_user_id: int):
     except ObjectDoesNotExist:
         messages.error(request, _("Subscription not found !"))
     return redirect("subscriptions")
+
+
+@login_required
+def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
+    """Edit an existing ticket or create a new ticket.
+    """
+    if ticket_id:
+        ticket_instance = get_object_or_404(Ticket, pk=ticket_id)
+    else:
+        ticket_instance = None
+    if request.POST.get("action") == "edit_ticket":
+        form = _handle_ticket_form(request, ticket_instance)
+    else:
+        form = forms.EditTicketForm(instance=ticket_instance)
+    context = {
+        'username': request.user.username,
+        'ticket_form': form,
+        'ticket_id': ticket_id
+    }
+    return render(request, "app/posts/edit_ticket.html", context)
+
+
+def _handle_ticket_form(request: HttpRequest, ticket_instance: Ticket = None) -> forms.EditTicketForm:
+    """Handles a ticket form and updates/creates a ticket if form is valid.
+    """
+    return forms.EditTicketForm(request.POST)
