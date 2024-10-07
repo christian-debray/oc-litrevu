@@ -4,6 +4,15 @@
 
 <h1>Suivre d'autres utilisateurs</h1>
 <div>
+    <form action="{%url "add_subscription" %}" method="POST">
+        {% csrf_token %}
+        <label for="{{ subscribe_form.follow_username.id_for_label }}">Nom d'utilisateur</label>
+        {{ subscribe_form.follow_username }}
+        <button type="submit">Envoyer</button>
+        {{ subscribe_form.follow_username.errors }}
+    </form>
+</div>
+<div>
     <h2>Abonnements</h2>
     <ul>
     {% for u in following %}

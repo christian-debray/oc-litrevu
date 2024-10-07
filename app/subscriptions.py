@@ -13,3 +13,24 @@ def followers(user: User) -> QuerySet[User]:
     """Query users following the current user.
     """
     return User.objects.filter(following__in=UserFollows.objects.filter(followed_user=user))
+
+
+def subscribe_to_user(user: User, follow_username: str):
+    """Try to follow another user.
+
+    - follow_username must be the exact username of a user not already followed.
+    - Raises DoesNotExist if the user ot follow is not found.
+    """
+    not_followed = User.objects.exclude(followed_by__user=user).exclude(pk=user.pk)
+    follow_user = not_followed.get(username=follow_username)
+    follow = UserFollows.objects.create(user=user, followed_user=follow_user)
+    follow.save()
+
+
+def cancel_subscription(user: User, followed_user_id: int):
+    """Cancel a subscirption to a user's posts.
+
+    - Raises DoesNotExist if no susbcription to user was found.
+    """
+    followed = UserFollows.objects.get(user=user, followed_user=followed_user_id)
+    return followed.delete()

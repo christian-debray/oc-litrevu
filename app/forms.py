@@ -44,3 +44,13 @@ class RegisterForm(forms.ModelForm):
         # also use our custom password strength validation
         password_strength_validator(password=password, min_lower=1, min_upper=1, min_digit=1, min_special=1)
         return password
+
+
+class SubscribeToUserForm(forms.Form):
+    """Subscribe to posts from another user in a user's feed.
+    For now we only query a single exact user name found in a text input.
+    """
+    follow_username = forms.CharField(
+        required=True,
+        validators=[validators.ProhibitNullCharactersValidator, validators.MaxLengthValidator(150)],
+    )

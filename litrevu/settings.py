@@ -170,3 +170,6 @@ LOGIN_URL = "/litrevu/auth"
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+# configure Message storage
+MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
