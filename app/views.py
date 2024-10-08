@@ -106,14 +106,10 @@ def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
         form = forms.EditTicketForm(request.POST)
         if formdata := posts_tools.handle_ticket_form(form):
             if ticket_id := request.POST.get("ticket_id"):
-                ticket_instance = posts_tools.update_ticket(
-                    request, request.user, ticket_id, **formdata
-                )
+                ticket_instance = posts_tools.update_ticket(request.user, ticket_id, **formdata)
                 action = "Updated"
             else:
-                ticket_instance = posts_tools.create_ticket(
-                    request, request.user, **formdata
-                )
+                ticket_instance = posts_tools.create_ticket(request.user, **formdata)
                 action = "Created"
         if ticket_instance:
             success_msg = _(f"{action} Ticket #%(ticket_id)i: %(ticket_title)s") % {
@@ -145,3 +141,4 @@ def delete_ticket(request: HttpRequest, ticket_id: int):
         % {"ticket_id": ticket_id, "ticket_title": ticket.title},
     )
     return redirect("feed")
+

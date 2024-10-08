@@ -1,5 +1,4 @@
 from .models import Ticket, User
-from django.http import HttpRequest
 from . import forms
 
 
@@ -16,7 +15,7 @@ def handle_ticket_form(form: forms.EditTicketForm) -> dict:
     return form
 
 
-def create_ticket(request: HttpRequest, user: User, **ticket_data) -> Ticket:
+def create_ticket(user: User, **ticket_data) -> Ticket:
     """Creates and stores a new Ticket under a user's name with the data provided.
     Returns the new Ticket instance.
     """
@@ -29,9 +28,7 @@ def create_ticket(request: HttpRequest, user: User, **ticket_data) -> Ticket:
     return ticket_instance
 
 
-def update_ticket(
-    request: HttpRequest, user: User, ticket_id: int, **ticket_data
-) -> Ticket:
+def update_ticket(user: User, ticket_id: int, **ticket_data) -> Ticket:
     """Updates an existing Ticket and returns the updated Ticket object on success.
     Raises Ticket.DoesNotExist if ticket is not found or does not belong to user.
     """
