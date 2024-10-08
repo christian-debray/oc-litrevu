@@ -28,8 +28,9 @@ def feed_entries(user: User) -> list[dict]:
     return feed
 
 
-def feed_post_dict(obj: Ticket | Review, content_type: str = None) -> dict:
+def feed_post_dict(obj: Ticket | Review, content_type: str = None, **kwargs) -> dict:
     """Transform a review or a ticket into a standardized dict to use in templates.
+    Accepts optionnal keywords to override values in the resuting dictionnary.
     """
     content_type = content_type or ("TICKET" if isinstance(obj, Ticket) else "REVIEW")
     post = {
@@ -43,13 +44,16 @@ def feed_post_dict(obj: Ticket | Review, content_type: str = None) -> dict:
         post["title"] = obj.title
         post["body"] = obj.description
         post["image"] = obj.image.url if obj.image else None
-        post["num_reviews"] = obj.total_reviews
-        post["can_review"] = obj.own_reviews == 0
+        post["num_reviews"] = obj.total_reviews if hasattr(obj, "total_reviews") else None
+        post["can_review"] = obj.own_reviews == 0 if hasattr(obj, "own_reviews") else None
+        post["ticket_id"] = obj.pk
     elif content_type == "REVIEW":
         post["title"] = obj.headline
         post["body"] = obj.body
         post["rating"] = obj.rating
         post["ticket_id"] = obj.ticket.pk
+    for k, v in kwargs.items():
+        post[k] = v
     return post
 
 

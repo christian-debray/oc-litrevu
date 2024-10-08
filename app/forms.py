@@ -18,3 +18,10 @@ class EditTicketForm(forms.ModelForm):
         model = models.Ticket
         fields = ["title", "description", "image", "user"]
     user = forms.ModelChoiceField(queryset=models.User.objects.all(), widget=forms.HiddenInput())
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = models.Review
+        fields = ["rating", "user", "headline", "body"]
+    user = forms.ModelChoiceField(queryset=models.User.objects.all(), widget=forms.HiddenInput())

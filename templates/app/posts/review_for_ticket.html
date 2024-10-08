@@ -1,0 +1,14 @@
+{% extends "app/base.html" %}
+{% block title %}Créer une critique{% endblock %}
+{% block content %}
+    <h1>Créer une critique</h1>
+    <div class="border mb-3">
+        <p>Vous êtes en train de poster en réponse à</p>
+        {% include "app/components/ticket_request_view.html" %}
+    </div>
+    <form action="{{ edit_url }}" method="POST" class="border">
+        {% csrf_token %}
+        {% include "app/posts/review_form_fields.html" %}
+        <button type="submit" name="action" value="validate_review">Envoyer</button>
+    </form>
+{% endblock %}

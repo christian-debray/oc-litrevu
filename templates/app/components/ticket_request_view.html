@@ -13,9 +13,11 @@
     {% if ticket.image %}
         <img alt="{{ticket.title}}" src="{{ ticket.image }}">
     {% endif %}
-    <p>{{ticket.num_reviews}} reviews</p>
+    {% if ticket.num_reviews is not None %}
+        <p>{{ticket.num_reviews}} reviews</p>
+    {% endif %}
     {% if ticket.can_review %}
-        <button>Créer une critique</button>
+        <a class="btn btn-primary" href="{% url "review_for_ticket" ticket.ticket_id %}">Créer une critique</a>
     {% endif %}
 </div>
 {% endautoescape %}

@@ -1,0 +1,8 @@
+{% if review_form.errors %}
+    <ul class="errorlist">
+        {% for err in review_form.errors %}
+            <li><strong>{{err|escape}}</strong></li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{{ review_form.as_p }}
