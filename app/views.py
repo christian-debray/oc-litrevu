@@ -308,7 +308,7 @@ def posts(request: HttpRequest) -> HttpResponse:
                     kwargs={"review_id": post_dict.get("id")}
                     ),
                 request=request,
-                next_url="post"
+                next_url="posts"
             )
             post_dict["commands"]["delete_url"] = _add_next_url(
                 url=urls.reverse(

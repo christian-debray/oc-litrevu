@@ -24,4 +24,7 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = models.Review
         fields = ["rating", "user", "headline", "body"]
+        widgets = {
+            "rating": forms.RadioSelect(choices=[(x, x) for x in range(6)])
+        }
     user = forms.ModelChoiceField(queryset=models.User.objects.all(), widget=forms.HiddenInput())
