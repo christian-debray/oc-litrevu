@@ -118,7 +118,9 @@ def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
 
     if request.POST.get("action") == "edit_ticket":
         # handle the form
-        form = forms.EditTicketForm(request.POST, request.FILES, instance=ticket_instance)
+        form = forms.EditTicketForm(
+            request.POST, request.FILES, instance=ticket_instance
+        )
         if form.is_valid():
             updated_ticket: Ticket = form.save()
             if updated_ticket:
@@ -158,24 +160,35 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
     """Creates a review in reply to a ticket.
     Ticket must be visible in the user's feed, otherwise the view will raise a 404.
     """
-    ticket_instance = get_object_or_404(Ticket, pk=ticket_id, user__in=subscription_tools.followed_users_or_self(user=request.user))
+    ticket_instance = get_object_or_404(
+        Ticket,
+        pk=ticket_id,
+        user__in=subscription_tools.followed_users_or_self(user=request.user),
+    )
     review_instance = models.Review(ticket=ticket_instance, user=request.user)
     if request.POST.get("action") == "validate_review":
         form = forms.ReviewForm(request.POST, instance=review_instance)
+        if form.is_valid():
+            review: models.Review = form.save()
+            messages.success(
+                request,
+                _("You posted a new review in reply to ticket #%(ticket_id)d")
+                % ({"ticket_id": review.ticket.pk})
+            )
+            return redirect("feed")
     else:
         form = forms.ReviewForm(instance=review_instance)
     context = {
         "username": request.user.username,
         "review_form": form,
-        "ticket": feed_tools.feed_post_dict(ticket_instance, can_review=False)
+        "ticket": feed_tools.feed_post_dict(ticket_instance, can_review=False),
     }
     return render(request, "app/posts/review_for_ticket.html", context)
 
 
 @login_required
 def edit_review(request: HttpRequest, review_id: int):
-    """Updates an existing review.
-    """
+    """Updates an existing review."""
 
 
 @login_required
