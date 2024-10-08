@@ -9,7 +9,6 @@ from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from . import feed as feed_tools
 from . import subscriptions as subscription_tools
-from . import posts as posts_tools
 import logging
 
 logger = logging.getLogger()
