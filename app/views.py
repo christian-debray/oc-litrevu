@@ -3,6 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from .models import User, Ticket
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django import urls
 from . import forms
 from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
@@ -101,31 +102,33 @@ def subscription_cancel(request: HttpRequest, followed_user_id: int) -> HttpResp
 @login_required
 def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
     """Edit an existing ticket or create a new ticket."""
-    ticket_instance = None
+    # select the usecase:
+    if ticket_id is not None:
+        # edit existing ticket
+        ticket_instance = get_object_or_404(Ticket, pk=ticket_id, user=request.user)
+        edit_url = urls.reverse("edit_ticket", kwargs={"ticket_id": ticket_id})
+    else:
+        # create a new ticket
+        ticket_instance = None
+        edit_url = urls.reverse("new_ticket")
+
     if request.POST.get("action") == "edit_ticket":
+        # handle the form
         form = forms.EditTicketForm(request.POST)
-        if formdata := posts_tools.handle_ticket_form(form):
-            if ticket_id := request.POST.get("ticket_id"):
-                ticket_instance = posts_tools.update_ticket(request.user, ticket_id, **formdata)
-                action = "Updated"
-            else:
-                ticket_instance = posts_tools.create_ticket(request.user, **formdata)
-                action = "Created"
-        if ticket_instance:
-            success_msg = _(f"{action} Ticket #%(ticket_id)i: %(ticket_title)s") % {
-                "ticket_id": ticket_instance.pk,
-                "ticket_title": ticket_instance.title,
-            }
-            messages.success(request, success_msg)
+        if posts_tools.handle_ticket_form(
+            request=request,
+            form=form,
+            ticket_author=request.user,
+            ticket_instance=ticket_instance
+        ):
             return redirect(request.POST.get("next", "feed"))
     else:
-        if ticket_id:
-            ticket_instance = get_object_or_404(Ticket, pk=ticket_id, user=request.user)
         form = forms.EditTicketForm(instance=ticket_instance)
     context = {
         "username": request.user.username,
         "ticket_form": form,
         "ticket_id": ticket_id,
+        "edit_url": edit_url,
     }
     return render(request, "app/posts/edit_ticket.html", context)
 
@@ -141,4 +144,3 @@ def delete_ticket(request: HttpRequest, ticket_id: int):
         % {"ticket_id": ticket_id, "ticket_title": ticket.title},
     )
     return redirect("feed")
-
