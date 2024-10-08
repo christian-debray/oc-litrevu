@@ -1,4 +1,5 @@
 from itertools import chain
+from urllib import parse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponse
 from .models import User, Ticket
@@ -130,7 +131,7 @@ def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
                     "ticket_title": updated_ticket.title,
                 }
                 messages.success(request, success_msg)
-                return redirect(request.POST.get("next", "feed"))
+                return _redirect_next(request, "feed")
     else:
         form = forms.EditTicketForm(instance=ticket_instance)
     context = {
@@ -138,7 +139,7 @@ def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
         "usecase": usecase,
         "ticket_form": form,
         "ticket_id": ticket_id,
-        "edit_url": edit_url,
+        "edit_url": _add_next_url(edit_url, request),
     }
     return render(request, "app/posts/edit_ticket.html", context)
 
@@ -153,7 +154,7 @@ def delete_ticket(request: HttpRequest, ticket_id: int):
         _("Ticket #%(ticket_id)i deleted: %(ticket_title)s")
         % {"ticket_id": ticket_id, "ticket_title": ticket.title},
     )
-    return redirect("feed")
+    return _redirect_next(request, "feed")
 
 
 @login_required
@@ -202,15 +203,16 @@ def edit_review(request: HttpRequest, review_id: int):
                 _("Updated your review in reply to ticket #%(ticket_id)d")
                 % ({"ticket_id": review.ticket.pk}),
             )
-            return redirect("feed")
+            return _redirect_next(request, "feed")
     else:
         form = forms.ReviewForm(instance=review_instance)
+    edit_url = urls.reverse("edit_review", kwargs={"review_id": review_id})
     context = {
         "username": request.user.username,
         "review_form": form,
         "ticket": feed_tools.feed_post_dict(review_instance.ticket, can_review=False),
         "usecase": "update",
-        "edit_url": urls.reverse("edit_review", kwargs={"review_id": review_id}),
+        "edit_url": _add_next_url(edit_url, request),
     }
     return render(request, "app/posts/edit_review.html", context)
 
@@ -261,7 +263,29 @@ def delete_review(request: HttpRequest, review_id: int):
         _("Deleted Review #%(review_id)d to ticket #%(ticket_id)d")
         % ({"review_id": review_id, "ticket_id": review_instance.ticket.pk}),
     )
-    return redirect("feed")
+    return _redirect_next(request, "feed")
+
+
+def _redirect_next(request: HttpRequest, default: str) -> HttpResponse:
+    return redirect(_get_next_route(request, default))
+
+
+def _get_next_route(request: HttpRequest, default: str) -> str:
+    """Tries to read the next url field in the request.
+    Falls back to default value set by the second parameter.
+    """
+    return request.POST.get("next") or request.GET.get("next") or default
+
+
+def _add_next_url(url: str, request: HttpRequest, next_url: str = None, default: str = None) -> str:
+    """Appends or updates the 'next" query parameter in a URL."""
+    next_url = next_url or _get_next_route(request, default)
+    if next_url:
+        parts = parse.urlsplit(url)
+        qs = parse.parse_qs(parts.query) or {}
+        qs.update({'next': next_url})
+        new_query = parse.urlencode(qs)
+        return parse.urlunsplit([parts.scheme, parts.netloc, parts.path, new_query, parts.fragment])
 
 
 @login_required
@@ -278,28 +302,52 @@ def posts(request: HttpRequest) -> HttpResponse:
         """Extend a post entry with edit and delete commands."""
         post_dict["commands"] = {}
         if post_dict.get("type") == "REVIEW":
-            post_dict["commands"]["edit_url"] = urls.reverse(
-                "edit_review", kwargs={"review_id": post_dict.get("id")}
+            post_dict["commands"]["edit_url"] = _add_next_url(
+                url=urls.reverse(
+                    "edit_review",
+                    kwargs={"review_id": post_dict.get("id")}
+                    ),
+                request=request,
+                next_url="post"
             )
-            post_dict["commands"]["delete_url"] = urls.reverse(
-                "delete_review", kwargs={"review_id": post_dict.get("id")}
+            post_dict["commands"]["delete_url"] = _add_next_url(
+                url=urls.reverse(
+                    "delete_review",
+                    kwargs={"review_id": post_dict.get("id")}
+                ),
+                request=request,
+                next_url="posts"
             )
         elif post_dict.get("type") == "TICKET":
-            post_dict["commands"]["edit_url"] = urls.reverse(
-                "edit_ticket", kwargs={"ticket_id": post_dict.get("id")}
-            )
-            post_dict["commands"]["delete_url"] = urls.reverse(
-                "delete_ticket", kwargs={"ticket_id": post_dict.get("id")}
-            )
+            post_dict["commands"]["edit_url"] = _add_next_url(
+                url=urls.reverse(
+                    "edit_ticket",
+                    kwargs={"ticket_id": post_dict.get("id")}
+                ),
+                request=request,
+                next_url="posts")
+            post_dict["commands"]["delete_url"] = _add_next_url(
+                url=urls.reverse(
+                    "delete_ticket",
+                    kwargs={"ticket_id": post_dict.get("id")},
+                ),
+                request=request,
+                next_url="posts")
         return post_dict
 
     posts = sorted(
         chain(
-            [set_commands(feed_tools.feed_post_dict(x, content_type="TICKET")) for x in user_tickets],
-            [set_commands(feed_tools.feed_post_dict(x, content_type="REVIEW")) for x in user_reviews]
+            [
+                set_commands(feed_tools.feed_post_dict(x, content_type="TICKET"))
+                for x in user_tickets
+            ],
+            [
+                set_commands(feed_tools.feed_post_dict(x, content_type="REVIEW"))
+                for x in user_reviews
+            ],
         ),
         key=lambda x: x.get("time_created"),
-        reverse=True
+        reverse=True,
     )
     context = {"username": request.user.username, "posts": posts}
     return render(request, "app/posts/posts.html", context=context)
