@@ -196,3 +196,18 @@ def create_review(request: HttpRequest):
     """Creates a review from scratch.
     POST data muts also contain the ticket data.
     """
+
+
+@login_required
+def delete_review(request: HttpRequest, review_id: int):
+    """Deletes a review written by the current user.
+    """
+    review_instance = get_object_or_404(models.Review, pk=review_id, user=request.user)
+    review_instance.delete()
+    messages.success(
+        request,
+        _("Deleted Review #%(review_id)d to ticket #%(ticket_id)d") % ({
+            'review_id': review_id,
+            'ticket_id': review_instance.ticket.pk
+        }))
+    return redirect("feed")
