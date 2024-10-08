@@ -1,0 +1,19 @@
+{% extends "app/base.html" %}
+{% block title %}Créer une critique{% endblock %}
+{% block content %}
+    <h1>Créer une critique</h1>
+    <form action="{% url "create_review" %}" method="POST" class="border">
+        {% csrf_token %}
+        <fieldset>
+            <legend>Livre / Article</legend>
+            {% include "app/posts/ticket_form_fields.html" %}
+        </fieldset>
+        <fieldset>
+            <legend>Critique</legend>
+            {% include "app/posts/review_form_fields.html" %}
+        </fieldset>
+        <p>
+            <button type="submit" name="action" value="validate_review">Envoyer</button>
+        </p>
+    </form>
+{% endblock %}

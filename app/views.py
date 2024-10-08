@@ -218,7 +218,36 @@ def edit_review(request: HttpRequest, review_id: int):
 def create_review(request: HttpRequest):
     """Creates a review from scratch.
     POST data muts also contain the ticket data.
+    Both ticket and review data must be valid to update the model.
+    Rediretc to user's feed on success.
     """
+    if request.POST.get("action") == "validate_review":
+        ticket_form = forms.EditTicketForm(request.POST, instance=models.Ticket(user=request.user))
+        if ticket_form.is_valid():
+            ticket_instance: models.Ticket = ticket_form.save(commit=False)
+        review_form = forms.ReviewForm(
+            request.POST,
+            instance=models.Review(user=request.user)
+            )
+        if review_form.is_valid():
+            review_instance: models.Review = review_form.save(commit=False)
+        if ticket_instance and review_instance:
+            ticket_instance.save()
+            review_instance.ticket = ticket_instance
+            review_instance.save()
+            messages.success(
+                request,
+                _("Created a new review for %(ticket_title)s") % ({'ticket_title': ticket_instance.title}))
+            return redirect("feed")
+    else:
+        ticket_form = forms.EditTicketForm(instance=models.Ticket(user=request.user))
+        review_form = forms.ReviewForm(instance=models.Review(user=request.user))
+    context = {
+        "username": request.user.username,
+        'ticket_form': ticket_form,
+        'review_form': review_form
+    }
+    return render(request, "app/posts/create_review.html", context=context)
 
 
 @login_required

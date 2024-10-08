@@ -3,7 +3,7 @@
 {% block content %}
 <div class="flex-row">
     <a href="{% url "new_ticket" %}">Demander une critique</a>
-    <a href="#">Créer une critique</a>
+    <a href="{%url "create_review" %}">Créer une critique</a>
 </div>
 <div>
     {% for entry in feed_entries %}
