@@ -182,13 +182,36 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
         "username": request.user.username,
         "review_form": form,
         "ticket": feed_tools.feed_post_dict(ticket_instance, can_review=False),
+        "usecase": "create",
+        "edit_url": urls.reverse("review_for_ticket", kwargs={'ticket_id': ticket_id})
     }
-    return render(request, "app/posts/review_for_ticket.html", context)
+    return render(request, "app/posts/edit_review.html", context)
 
 
 @login_required
 def edit_review(request: HttpRequest, review_id: int):
     """Updates an existing review."""
+    review_instance = get_object_or_404(models.Review, pk=review_id, user=request.user)
+    if request.POST.get("action") == "validate_review":
+        form = forms.ReviewForm(request.POST, instance=review_instance)
+        if form.is_valid():
+            review: models.Review = form.save()
+            messages.success(
+                request,
+                _("Updated your review in reply to ticket #%(ticket_id)d")
+                % ({"ticket_id": review.ticket.pk})
+            )
+            return redirect("feed")
+    else:
+        form = forms.ReviewForm(instance=review_instance)
+    context = {
+        "username": request.user.username,
+        "review_form": form,
+        "ticket": feed_tools.feed_post_dict(review_instance.ticket, can_review=False),
+        "usecase": "update",
+        "edit_url": urls.reverse("edit_review", kwargs={'review_id': review_id})
+    }
+    return render(request, "app/posts/edit_review.html", context)
 
 
 @login_required
