@@ -1,6 +1,5 @@
 from itertools import chain
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import F
 from django.http import HttpRequest, HttpResponse
 from .models import User, Ticket
 from . import models
@@ -225,17 +224,14 @@ def create_review(request: HttpRequest):
     """
     if request.POST.get("action") == "validate_review":
         ticket_form = forms.EditTicketForm(
-            request.POST, instance=models.Ticket(user=request.user)
+            request.POST, request.FILES, instance=models.Ticket(user=request.user)
         )
-        if ticket_form.is_valid():
-            ticket_instance: models.Ticket = ticket_form.save(commit=False)
         review_form = forms.ReviewForm(
             request.POST, instance=models.Review(user=request.user)
         )
-        if review_form.is_valid():
+        if ticket_form.is_valid() and review_form.is_valid():
+            ticket_instance: models.Ticket = ticket_form.save()
             review_instance: models.Review = review_form.save(commit=False)
-        if ticket_instance and review_instance:
-            ticket_instance.save()
             review_instance.ticket = ticket_instance
             review_instance.save()
             messages.success(

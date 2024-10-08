@@ -2,7 +2,7 @@
 {% block title %}Créer une critique{% endblock %}
 {% block content %}
     <h1>Créer une critique</h1>
-    <form action="{% url "create_review" %}" method="POST" class="border">
+    <form action="{% url "create_review" %}" method="POST" class="border" enctype="multipart/form-data">
         {% csrf_token %}
         <fieldset>
             <legend>Livre / Article</legend>

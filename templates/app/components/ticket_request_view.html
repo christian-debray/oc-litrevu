@@ -11,7 +11,9 @@
         <p>{{ticket.body}}</p>
     {% endif %}
     {% if ticket.image %}
-        <img alt="{{ticket.title}}" src="{{ ticket.image }}">
+        <div class="w-25">
+            <img alt="{{ticket.title}}" class="img-fluid" src="{{ ticket.image }}">
+        </div>
     {% endif %}
     {% if ticket.num_reviews is not None %}
         <p>{{ticket.num_reviews}} reviews</p>

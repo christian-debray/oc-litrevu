@@ -2,8 +2,8 @@
 {% block title%}User {{ username }}'s feed{% endblock %}
 {% block content %}
 <div class="flex-row">
-    <a href="{% url "new_ticket" %}">Demander une critique</a>
-    <a href="{%url "create_review" %}">Créer une critique</a>
+    <a class="btn btn-primary" href="{% url "new_ticket" %}">Demander une critique</a>
+    <a class="btn btn-primary" href="{%url "create_review" %}">Créer une critique</a>
 </div>
 <div>
     {% for entry in feed_entries %}
