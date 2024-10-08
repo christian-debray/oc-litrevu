@@ -3,6 +3,12 @@ from .models import User, UserFollows
 from django.db.models import QuerySet
 
 
+def followed_users_or_self(user: User) -> QuerySet[User]:
+    """Queries all users followed by user and includes user in the result set.
+    """
+    return followed_users(user) | User.objects.filter(pk=user.pk)
+
+
 def followed_users(user: User) -> QuerySet[User]:
     """Query users followed by the current user.
     """

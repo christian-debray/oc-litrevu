@@ -1,6 +1,6 @@
 from .models import Ticket, Review, User
 from django.db.models import QuerySet, Count, Q
-from .subscriptions import followed_users
+from .subscriptions import followed_users_or_self
 
 
 def feed_entries(user: User) -> list[dict]:
@@ -9,7 +9,7 @@ def feed_entries(user: User) -> list[dict]:
 
     See feed_post_dict() method for a list of available dict entries.
     """
-    u_list = followed_users(user) | User.objects.filter(pk=user.pk)
+    u_list = followed_users_or_self(user)
     # performance: reduce hits on DB by selecting related user and ticket objects.
     tickets = feed_tickets(user=user, following=u_list).select_related("user")
     reviews = feed_reviews(user=user, following=u_list).select_related("user").select_related("ticket")
@@ -56,7 +56,7 @@ def feed_post_dict(obj: Ticket | Review, content_type: str = None) -> dict:
 def feed_tickets(user: User, following=None) -> QuerySet[Ticket]:
     """Returns a collection of tickets, annotated with the total number of reviews
     and the reviews posted by the user."""
-    u_list = following or (followed_users(user) | User.objects.filter(pk=user.pk))
+    u_list = following or followed_users_or_self(user)
     own_reviews_q = Count("review", filter=Q(review__user=user))
     tickets = (
         Ticket.objects.annotate(total_reviews=Count("review"), own_reviews=own_reviews_q)
@@ -69,6 +69,6 @@ def feed_reviews(user: User, following=None) -> QuerySet[Review]:
     """Returns a collection of reviews followed by the current user.
     This always includes reviews requested by the current user, regardless of the review's author.
     """
-    u_list = following or (followed_users(user) | User.objects.filter(pk=user.pk))
+    u_list = following or followed_users_or_self(user)
     reviews = Review.objects.filter(user__in=u_list) | Review.objects.filter(ticket__user=user)
     return reviews
