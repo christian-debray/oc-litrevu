@@ -105,27 +105,34 @@ def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
     # select the usecase:
     if ticket_id is not None:
         # edit existing ticket
+        usecase = "update"
         ticket_instance = get_object_or_404(Ticket, pk=ticket_id, user=request.user)
         edit_url = urls.reverse("edit_ticket", kwargs={"ticket_id": ticket_id})
+        success_msg_tpl = _("Updated ticket #%(ticket_id)i: %(ticket_title)s")
     else:
         # create a new ticket
-        ticket_instance = None
+        usecase = "create"
+        ticket_instance = Ticket(user=request.user)
         edit_url = urls.reverse("new_ticket")
+        success_msg_tpl = _("Created a new ticket #%(ticket_id)i: %(ticket_title)s")
 
     if request.POST.get("action") == "edit_ticket":
         # handle the form
-        form = forms.EditTicketForm(request.POST)
-        if posts_tools.handle_ticket_form(
-            request=request,
-            form=form,
-            ticket_author=request.user,
-            ticket_instance=ticket_instance
-        ):
-            return redirect(request.POST.get("next", "feed"))
+        form = forms.EditTicketForm(request.POST, request.FILES, instance=ticket_instance)
+        if form.is_valid():
+            updated_ticket: Ticket = form.save()
+            if updated_ticket:
+                success_msg = success_msg_tpl % {
+                    "ticket_id": updated_ticket.pk,
+                    "ticket_title": updated_ticket.title,
+                }
+                messages.success(request, success_msg)
+                return redirect(request.POST.get("next", "feed"))
     else:
         form = forms.EditTicketForm(instance=ticket_instance)
     context = {
         "username": request.user.username,
+        "usecase": usecase,
         "ticket_form": form,
         "ticket_id": ticket_id,
         "edit_url": edit_url,

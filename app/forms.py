@@ -16,4 +16,5 @@ class SubscribeToUserForm(forms.Form):
 class EditTicketForm(forms.ModelForm):
     class Meta:
         model = models.Ticket
-        fields = ["title", "description", "image"]
+        fields = ["title", "description", "image", "user"]
+    user = forms.ModelChoiceField(queryset=models.User.objects.all(), widget=forms.HiddenInput())

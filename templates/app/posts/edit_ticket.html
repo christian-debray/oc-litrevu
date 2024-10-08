@@ -1,8 +1,8 @@
 {% extends "app/base.html" %}
-{% block title %}{% if ticket_id %}Editer{% else %}Créer{% endif %} un ticket{% endblock %}
+{% block title %}{% if usecase == "update" %}Editer{% else %}Créer{% endif %} un ticket{% endblock %}
 {% block content %}
-    <h1>{% if ticket_id %}Editer{% else %}Créer{% endif %} un ticket</h1>
-    <form action="{{ edit_url }}" method="POST">
+    <h1>{% if usecase == "update" %}Editer{% else %}Créer{% endif %} un ticket</h1>
+    <form action="{{ edit_url }}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {% include "app/posts/ticket_form_fields.html" %}
         <button type="submit" name="action" value="edit_ticket">Envoyer</button>

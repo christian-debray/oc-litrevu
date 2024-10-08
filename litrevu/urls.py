@@ -17,8 +17,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from debug_toolbar.toolbar import debug_toolbar_urls
+from django.conf.urls.static import static
+from django.conf import settings
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('litrevu/', include("app.urls")),
 ] + debug_toolbar_urls()
+
+""" Include urls to uploaded book cover pitcures in Tickets.
+
+    WARNING !
+    URLs to uploaded media are not safe for production:
+    see https://docs.djangoproject.com/en/5.1/howto/static-files/#serving-files-uploaded-by-a-user-during-development
+    So we include the media URLs only in developpement...
+ """
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

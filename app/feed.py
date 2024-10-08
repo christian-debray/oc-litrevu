@@ -42,7 +42,7 @@ def feed_post_dict(obj: Ticket | Review, content_type: str = None) -> dict:
     if content_type == "TICKET":
         post["title"] = obj.title
         post["body"] = obj.description
-        post["image"] = obj.image
+        post["image"] = obj.image.url if obj.image else None
         post["num_reviews"] = obj.total_reviews
         post["can_review"] = obj.own_reviews == 0
     elif content_type == "REVIEW":

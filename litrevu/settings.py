@@ -175,7 +175,11 @@ INTERNAL_IPS = [
 # configure Message storage
 MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler"
+]
 
 # configure storage of media files, ie Ticket images
 MEDIA_ROOT = Path(BASE_DIR, "media/").resolve()
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"

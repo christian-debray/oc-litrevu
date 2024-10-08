@@ -11,7 +11,7 @@
         <p>{{ticket.body}}</p>
     {% endif %}
     {% if ticket.image %}
-        {{ticket.image}}
+        <img alt="{{ticket.title}}" src="{{ ticket.image }}">
     {% endif %}
     <p>{{ticket.num_reviews}} reviews</p>
     {% if ticket.can_review %}
