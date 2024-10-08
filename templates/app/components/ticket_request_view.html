@@ -17,7 +17,8 @@
         <p>{{ticket.num_reviews}} reviews</p>
     {% endif %}
     {% if ticket.can_review %}
-        <a class="btn btn-primary" href="{% url "review_for_ticket" ticket.ticket_id %}">Créer une critique</a>
+    <a class="btn btn-primary" href="{% url "review_for_ticket" ticket.ticket_id %}">Créer une critique</a>
     {% endif %}
+    {% include "app/components/post_entry_commands.html" with post_commands=ticket.commands %}
 </div>
 {% endautoescape %}

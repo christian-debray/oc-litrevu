@@ -1,0 +1,14 @@
+{% extends "app/base.html" %}
+{% block title%}User {{ username }}'s Posts{% endblock %}
+{% block content %}
+<h1>Vos posts</h1>
+<div>
+    {% for entry in posts %}
+        {% if entry.type == "REVIEW" %}
+            {% include "app/components/review_view.html" with review=entry %}
+        {% elif  entry.type == "TICKET" %}
+            {% include "app/components/ticket_request_view.html" with ticket=entry %}
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

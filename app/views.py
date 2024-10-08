@@ -1,4 +1,6 @@
+from itertools import chain
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import F
 from django.http import HttpRequest, HttpResponse
 from .models import User, Ticket
 from . import models
@@ -173,7 +175,7 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
             messages.success(
                 request,
                 _("You posted a new review in reply to ticket #%(ticket_id)d")
-                % ({"ticket_id": review.ticket.pk})
+                % ({"ticket_id": review.ticket.pk}),
             )
             return redirect("feed")
     else:
@@ -183,7 +185,7 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
         "review_form": form,
         "ticket": feed_tools.feed_post_dict(ticket_instance, can_review=False),
         "usecase": "create",
-        "edit_url": urls.reverse("review_for_ticket", kwargs={'ticket_id': ticket_id})
+        "edit_url": urls.reverse("review_for_ticket", kwargs={"ticket_id": ticket_id}),
     }
     return render(request, "app/posts/edit_review.html", context)
 
@@ -199,7 +201,7 @@ def edit_review(request: HttpRequest, review_id: int):
             messages.success(
                 request,
                 _("Updated your review in reply to ticket #%(ticket_id)d")
-                % ({"ticket_id": review.ticket.pk})
+                % ({"ticket_id": review.ticket.pk}),
             )
             return redirect("feed")
     else:
@@ -209,7 +211,7 @@ def edit_review(request: HttpRequest, review_id: int):
         "review_form": form,
         "ticket": feed_tools.feed_post_dict(review_instance.ticket, can_review=False),
         "usecase": "update",
-        "edit_url": urls.reverse("edit_review", kwargs={'review_id': review_id})
+        "edit_url": urls.reverse("edit_review", kwargs={"review_id": review_id}),
     }
     return render(request, "app/posts/edit_review.html", context)
 
@@ -222,13 +224,14 @@ def create_review(request: HttpRequest):
     Rediretc to user's feed on success.
     """
     if request.POST.get("action") == "validate_review":
-        ticket_form = forms.EditTicketForm(request.POST, instance=models.Ticket(user=request.user))
+        ticket_form = forms.EditTicketForm(
+            request.POST, instance=models.Ticket(user=request.user)
+        )
         if ticket_form.is_valid():
             ticket_instance: models.Ticket = ticket_form.save(commit=False)
         review_form = forms.ReviewForm(
-            request.POST,
-            instance=models.Review(user=request.user)
-            )
+            request.POST, instance=models.Review(user=request.user)
+        )
         if review_form.is_valid():
             review_instance: models.Review = review_form.save(commit=False)
         if ticket_instance and review_instance:
@@ -237,29 +240,70 @@ def create_review(request: HttpRequest):
             review_instance.save()
             messages.success(
                 request,
-                _("Created a new review for %(ticket_title)s") % ({'ticket_title': ticket_instance.title}))
+                _("Created a new review for %(ticket_title)s")
+                % ({"ticket_title": ticket_instance.title}),
+            )
             return redirect("feed")
     else:
         ticket_form = forms.EditTicketForm(instance=models.Ticket(user=request.user))
         review_form = forms.ReviewForm(instance=models.Review(user=request.user))
     context = {
         "username": request.user.username,
-        'ticket_form': ticket_form,
-        'review_form': review_form
+        "ticket_form": ticket_form,
+        "review_form": review_form,
     }
     return render(request, "app/posts/create_review.html", context=context)
 
 
 @login_required
 def delete_review(request: HttpRequest, review_id: int):
-    """Deletes a review written by the current user.
-    """
+    """Deletes a review written by the current user."""
     review_instance = get_object_or_404(models.Review, pk=review_id, user=request.user)
     review_instance.delete()
     messages.success(
         request,
-        _("Deleted Review #%(review_id)d to ticket #%(ticket_id)d") % ({
-            'review_id': review_id,
-            'ticket_id': review_instance.ticket.pk
-        }))
+        _("Deleted Review #%(review_id)d to ticket #%(ticket_id)d")
+        % ({"review_id": review_id, "ticket_id": review_instance.ticket.pk}),
+    )
     return redirect("feed")
+
+
+@login_required
+def posts(request: HttpRequest) -> HttpResponse:
+    """Display all reviews and tickets posted by a user."""
+    user_tickets = models.Ticket.objects.filter(user=request.user)
+    user_reviews = (
+        models.Review.objects.filter(user=request.user)
+        .select_related("user")
+        .select_related("ticket")
+    )
+
+    def set_commands(post_dict: dict):
+        """Extend a post entry with edit and delete commands."""
+        post_dict["commands"] = {}
+        if post_dict.get("type") == "REVIEW":
+            post_dict["commands"]["edit_url"] = urls.reverse(
+                "edit_review", kwargs={"review_id": post_dict.get("id")}
+            )
+            post_dict["commands"]["delete_url"] = urls.reverse(
+                "delete_review", kwargs={"review_id": post_dict.get("id")}
+            )
+        elif post_dict.get("type") == "TICKET":
+            post_dict["commands"]["edit_url"] = urls.reverse(
+                "edit_ticket", kwargs={"ticket_id": post_dict.get("id")}
+            )
+            post_dict["commands"]["delete_url"] = urls.reverse(
+                "delete_ticket", kwargs={"ticket_id": post_dict.get("id")}
+            )
+        return post_dict
+
+    posts = sorted(
+        chain(
+            [set_commands(feed_tools.feed_post_dict(x, content_type="TICKET")) for x in user_tickets],
+            [set_commands(feed_tools.feed_post_dict(x, content_type="REVIEW")) for x in user_reviews]
+        ),
+        key=lambda x: x.get("time_created"),
+        reverse=True
+    )
+    context = {"username": request.user.username, "posts": posts}
+    return render(request, "app/posts/posts.html", context=context)

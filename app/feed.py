@@ -1,6 +1,11 @@
 from .models import Ticket, Review, User
 from django.db.models import QuerySet, Count, Q
 from .subscriptions import followed_users_or_self
+from typing import Iterable
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 def feed_entries(user: User) -> list[dict]:
@@ -13,19 +18,26 @@ def feed_entries(user: User) -> list[dict]:
     # performance: reduce hits on DB by selecting related user and ticket objects.
     tickets = feed_tickets(user=user, following=u_list).select_related("user")
     reviews = feed_reviews(user=user, following=u_list).select_related("user").select_related("ticket")
+    return chain_posts(tickets, reviews)
+
+
+def chain_posts(tickets: Iterable[Ticket], reviews: Iterable[Review]) -> list[dict]:
+    """Chains rleated reviews and tickets lists into a single ordered list of
+    dictionnary, suitable to display in templates (for ex. in a user's feed).
+    """
     ticket_posts_map = {x.pk: feed_post_dict(x, "TICKET") for x in tickets}
-    feed = list(ticket_posts_map.values())
+    posts = list(ticket_posts_map.values())
     for r in reviews:
         review_post = feed_post_dict(r, "REVIEW")
         # performance hack: bind each review to the ticket we'v already fetched just before
         # so as to avoid N+1 queries when displaying a review and the requesting ticket.
         review_post['related_ticket'] = ticket_posts_map.get(r.ticket.pk)
-        feed.append(review_post)
-    feed.sort(
+        posts.append(review_post)
+    posts.sort(
         key=lambda x: x.get("time_created"),
         reverse=True
     )
-    return feed
+    return posts
 
 
 def feed_post_dict(obj: Ticket | Review, content_type: str = None, **kwargs) -> dict:
@@ -52,8 +64,10 @@ def feed_post_dict(obj: Ticket | Review, content_type: str = None, **kwargs) -> 
         post["body"] = obj.body
         post["rating"] = obj.rating
         post["ticket_id"] = obj.ticket.pk
+        post["related_ticket"] = feed_post_dict(obj.ticket, "TICKET", **kwargs)
     for k, v in kwargs.items():
         post[k] = v
+    logger.debug(post)
     return post
 
 
