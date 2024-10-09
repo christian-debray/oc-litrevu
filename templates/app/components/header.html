@@ -2,7 +2,7 @@
     <div class="navbar-brand text-center">LITReview</div>
     {% if user and user.is_authenticated %}
         {% if debug %}
-            <div class="debug text-center">{{user.username}}</div>
+            <div class="debug text-center">{{user.username}} ({{user.id}})</div>
         {% endif %}
         {% include "app/components/app_navbar.html" %}
     {% endif %}
