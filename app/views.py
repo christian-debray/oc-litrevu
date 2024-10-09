@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from . import feed as feed_tools
 from . import subscriptions as subscription_tools
+from . import posts as post_tools
 import logging
 
 logger = logging.getLogger()
@@ -193,7 +194,7 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
         ticket_instance=ticket_instance,
         review_instance=review_instance,
         success_msg_tpl=_("You posted a new review in reply to ticket #%(ticket_id)d"),
-        edit_url=urls.reverse("review_for_ticket", kwargs={"ticket_id": ticket_id})
+        edit_url=urls.reverse("review_for_ticket", kwargs={"ticket_id": ticket_id}),
     )
 
 
@@ -207,25 +208,26 @@ def edit_review(request: HttpRequest, review_id: int):
         ticket_instance=review_instance.ticket,
         review_instance=review_instance,
         success_msg_tpl=_("Updated your review in reply to ticket #%(ticket_id)d"),
-        edit_url=urls.reverse("edit_review", kwargs={"review_id": review_id})
+        edit_url=urls.reverse("edit_review", kwargs={"review_id": review_id}),
     )
 
 
 def _edit_or_create_review(
-        request: HttpRequest,
-        usecase: str,
-        ticket_instance: models.Ticket,
-        review_instance: models.Review,
-        success_msg_tpl: str,
-        edit_url: str,
+    request: HttpRequest,
+    usecase: str,
+    ticket_instance: models.Ticket,
+    review_instance: models.Review,
+    success_msg_tpl: str,
+    edit_url: str,
 ) -> HttpResponse:
-    """Edit an exiting review, or create a new one in reply to an exiting ticket.
-    """
+    """Edit an exiting review, or create a new one in reply to an exiting ticket."""
     if request.POST.get("action") == "validate_review":
         form = forms.ReviewForm(request.POST, instance=review_instance)
         if form.is_valid():
             review: models.Review = form.save()
-            messages.success(request, success_msg_tpl % ({"ticket_id": review.ticket.pk}))
+            messages.success(
+                request, success_msg_tpl % ({"ticket_id": review.ticket.pk})
+            )
             return _redirect_next(request, "feed")
     else:
         form = forms.ReviewForm(instance=review_instance)
@@ -233,7 +235,7 @@ def _edit_or_create_review(
         "review_form": form,
         "ticket": feed_tools.feed_post_dict(ticket_instance, can_review=False),
         "usecase": usecase,
-        "edit_url": edit_url
+        "edit_url": edit_url,
     }
     return render(request, "app/posts/edit_review.html", context)
 
@@ -322,59 +324,38 @@ def _add_next_url(url: str, request: HttpRequest, next_url: str = None) -> str:
 @login_required
 def posts(request: HttpRequest) -> HttpResponse:
     """Display all reviews and tickets posted by a user."""
-    user_tickets = models.Ticket.objects.filter(user=request.user)
+    user_tickets = models.Ticket.objects.filter(user=request.user).select_related(
+        "user"
+    )
     user_reviews = (
         models.Review.objects.filter(user=request.user)
         .select_related("user")
         .select_related("ticket")
     )
 
-    def set_commands(post_dict: dict):
-        """Extend a post entry with edit and delete commands."""
-        post_dict["commands"] = {}
-        if post_dict.get("type") == "REVIEW":
-            post_dict["commands"]["edit_url"] = _add_next_url(
-                url=urls.reverse(
-                    "edit_review", kwargs={"review_id": post_dict.get("id")}
-                ),
+    def prepare_post_entry(post_obj: models.Review | models.Ticket) -> dict:
+        """renders all properties required to display a post entry.
+        returns the result as a dictionnary.
+        """
+        post_dict = feed_tools.feed_post_dict(post_obj)
+        post_dict["commands"] = {
+            "edit_url": _add_next_url(
                 request=request,
+                url=post_tools.get_command_uri("edit", post_obj),
                 next_url="posts",
-            )
-            post_dict["commands"]["delete_url"] = _add_next_url(
-                url=urls.reverse(
-                    "delete_review", kwargs={"review_id": post_dict.get("id")}
-                ),
+            ),
+            "delete_url": _add_next_url(
                 request=request,
+                url=post_tools.get_command_uri("delete", post_obj),
                 next_url="posts",
-            )
-        elif post_dict.get("type") == "TICKET":
-            post_dict["commands"]["edit_url"] = _add_next_url(
-                url=urls.reverse(
-                    "edit_ticket", kwargs={"ticket_id": post_dict.get("id")}
-                ),
-                request=request,
-                next_url="posts",
-            )
-            post_dict["commands"]["delete_url"] = _add_next_url(
-                url=urls.reverse(
-                    "delete_ticket",
-                    kwargs={"ticket_id": post_dict.get("id")},
-                ),
-                request=request,
-                next_url="posts",
-            )
+            ),
+        }
         return post_dict
 
     posts = sorted(
         chain(
-            [
-                set_commands(feed_tools.feed_post_dict(x, content_type="TICKET"))
-                for x in user_tickets
-            ],
-            [
-                set_commands(feed_tools.feed_post_dict(x, content_type="REVIEW"))
-                for x in user_reviews
-            ],
+            [prepare_post_entry(x) for x in user_tickets],
+            [prepare_post_entry(x) for x in user_reviews],
         ),
         key=lambda x: x.get("time_created"),
         reverse=True,
