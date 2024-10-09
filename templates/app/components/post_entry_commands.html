@@ -1,10 +1,10 @@
 {% if post_commands %}
     <div class="flex-row">
-        {% if post_commands.edit_url %}
-        <a class="btn btn-primary" href="{{post_commands.edit_url}}">Modifier</a>
+        {% if post_commands.edit %}
+        <a class="btn btn-primary" href="{{post_commands.edit}}">Modifier</a>
         {% endif %}
-        {% if post_commands.delete_url %}
-        <a class="btn btn-secondary" href="{{post_commands.delete_url}}">Supprimer</a>
+        {% if post_commands.delete %}
+        <a class="btn btn-secondary" href="{{post_commands.delete}}">Supprimer</a>
         {% endif %}
     </div>
 {% endif %}

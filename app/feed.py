@@ -1,4 +1,5 @@
 from .models import Ticket, Review, User
+from .posts import prepare_post_entry
 from django.db.models import QuerySet, Count, Q
 from .subscriptions import followed_users_or_self
 from typing import Iterable
@@ -25,10 +26,10 @@ def chain_posts(tickets: Iterable[Ticket], reviews: Iterable[Review]) -> list[di
     """Chains rleated reviews and tickets lists into a single ordered list of
     dictionnary, suitable to display in templates (for ex. in a user's feed).
     """
-    ticket_posts_map = {x.pk: feed_post_dict(x, "TICKET") for x in tickets}
+    ticket_posts_map = {x.pk: prepare_post_entry(x) for x in tickets}
     posts = list(ticket_posts_map.values())
     for r in reviews:
-        review_post = feed_post_dict(r, "REVIEW")
+        review_post = prepare_post_entry(r)
         # performance hack: bind each review to the ticket we'v already fetched just before
         # so as to avoid N+1 queries when displaying a review and the requesting ticket.
         review_post['related_ticket'] = ticket_posts_map.get(r.ticket.pk)
@@ -38,38 +39,6 @@ def chain_posts(tickets: Iterable[Ticket], reviews: Iterable[Review]) -> list[di
         reverse=True
     )
     return posts
-
-
-def feed_post_dict(obj: Ticket | Review, content_type: str = None, **kwargs) -> dict:
-    """Transform a review or a ticket into a standardized dict to use in templates.
-    Accepts optionnal keywords to override values in the resuting dictionnary.
-    """
-    content_type = content_type or ("TICKET" if isinstance(obj, Ticket) else "REVIEW")
-    post = {
-        "id": obj.pk,
-        "type": content_type,
-        "time_created": obj.time_created,
-        "author_name": obj.user.username,
-        "author_id": obj.user.pk
-    }
-    if content_type == "TICKET":
-        post["title"] = obj.title
-        post["body"] = obj.description
-        post["image"] = obj.image.url if obj.image else None
-        post["num_reviews"] = obj.total_reviews if hasattr(obj, "total_reviews") else None
-        post["can_review"] = obj.own_reviews == 0 if hasattr(obj, "own_reviews") else None
-        post["ticket_id"] = obj.pk
-    elif content_type == "REVIEW":
-        post["title"] = obj.headline
-        post["body"] = obj.body
-        post["rating"] = obj.rating
-        post["ticket_id"] = obj.ticket.pk
-        # @todo N+1 DB hit
-        post["related_ticket"] = feed_post_dict(obj.ticket, "TICKET", **kwargs)
-    for k, v in kwargs.items():
-        post[k] = v
-    logger.debug(post)
-    return post
 
 
 def feed_tickets(user: User, following=None) -> QuerySet[Ticket]:

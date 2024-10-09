@@ -1,5 +1,4 @@
 from itertools import chain
-from urllib import parse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponse
 from .models import User, Ticket
@@ -13,6 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from . import feed as feed_tools
 from . import subscriptions as subscription_tools
 from . import posts as post_tools
+from . import helpers
 import logging
 
 logger = logging.getLogger()
@@ -152,14 +152,14 @@ def _edit_or_create_ticket(
                     "ticket_title": updated_ticket.title,
                 }
                 messages.success(request, success_msg)
-                return _redirect_next(request, "feed")
+                return helpers.redirect_next(request, "feed")
     else:
         form = forms.EditTicketForm(instance=ticket_instance)
     context = {
         "usecase": usecase,
         "ticket_form": form,
         "ticket_id": ticket_instance.pk,
-        "edit_url": _add_next_url(edit_url, request),
+        "edit_url": helpers.add_next_url(edit_url, request),
     }
     return render(request, "app/posts/edit_ticket.html", context)
 
@@ -174,7 +174,7 @@ def delete_ticket(request: HttpRequest, ticket_id: int):
         _("Ticket #%(ticket_id)i deleted: %(ticket_title)s")
         % {"ticket_id": ticket_id, "ticket_title": ticket.title},
     )
-    return _redirect_next(request, "feed")
+    return helpers.redirect_next(request, "feed")
 
 
 @login_required
@@ -228,14 +228,14 @@ def _edit_or_create_review(
             messages.success(
                 request, success_msg_tpl % ({"ticket_id": review.ticket.pk})
             )
-            return _redirect_next(request, "feed")
+            return helpers.redirect_next(request, "feed")
     else:
         form = forms.ReviewForm(instance=review_instance)
     context = {
         "review_form": form,
-        "ticket": feed_tools.feed_post_dict(ticket_instance, can_review=False),
+        "ticket": post_tools.feed_post_dict(ticket_instance, can_review=False),
         "usecase": usecase,
-        "edit_url": edit_url,
+        "edit_url": helpers.add_next_url(edit_url, request),
     }
     return render(request, "app/posts/edit_review.html", context)
 
@@ -285,40 +285,7 @@ def delete_review(request: HttpRequest, review_id: int):
         _("Deleted Review #%(review_id)d to ticket #%(ticket_id)d")
         % ({"review_id": review_id, "ticket_id": review_instance.ticket.pk}),
     )
-    return _redirect_next(request, "feed")
-
-
-def _redirect_next(request: HttpRequest, default: str) -> HttpResponse:
-    return redirect(_get_next_route(request, default))
-
-
-def _get_next_route(request: HttpRequest, default: str) -> str:
-    """Tries to read the next url field in the request.
-    Falls back to default value set by the second parameter.
-    """
-    return request.POST.get("next") or request.GET.get("next") or default
-
-
-def _add_next_url(url: str, request: HttpRequest, next_url: str = None) -> str:
-    """Appends or updates the 'next" query parameter in a URL.
-    Helps customizing redirects after processing a form, for instance.
-
-    The next_url string can be either a view name as defined in the URLConf or a full URL.
-
-    If the second parameter is not set, tries to find the next url in the current request.
-    If no 'next' query parameter is found nor set, returns the url without changes.
-    """
-    next_url = next_url or _get_next_route(request, next_url)
-    if next_url:
-        parts = parse.urlsplit(url)
-        qs = parse.parse_qs(parts.query) or {}
-        qs.update({"next": next_url})
-        new_query = parse.urlencode(qs)
-        return parse.urlunsplit(
-            [parts.scheme, parts.netloc, parts.path, new_query, parts.fragment]
-        )
-    else:
-        return url
+    return helpers.redirect_next(request, "feed")
 
 
 @login_required
@@ -332,30 +299,20 @@ def posts(request: HttpRequest) -> HttpResponse:
         .select_related("user")
         .select_related("ticket")
     )
-
-    def prepare_post_entry(post_obj: models.Review | models.Ticket) -> dict:
-        """renders all properties required to display a post entry.
-        returns the result as a dictionnary.
-        """
-        post_dict = feed_tools.feed_post_dict(post_obj)
-        post_dict["commands"] = {
-            "edit_url": _add_next_url(
-                request=request,
-                url=post_tools.get_command_uri("edit", post_obj),
-                next_url="posts",
-            ),
-            "delete_url": _add_next_url(
-                request=request,
-                url=post_tools.get_command_uri("delete", post_obj),
-                next_url="posts",
-            ),
-        }
-        return post_dict
-
     posts = sorted(
         chain(
-            [prepare_post_entry(x) for x in user_tickets],
-            [prepare_post_entry(x) for x in user_reviews],
+            [
+                post_tools.prepare_post_entry(
+                    post_obj=x, request=request, with_commands=True, next_url="posts"
+                )
+                for x in user_tickets
+            ],
+            [
+                post_tools.prepare_post_entry(
+                    post_obj=x, request=request, with_commands=True, next_url="posts"
+                )
+                for x in user_reviews
+            ],
         ),
         key=lambda x: x.get("time_created"),
         reverse=True,
