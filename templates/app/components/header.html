@@ -1,6 +1,7 @@
 <div class="navbar">
     <div class="navbar-brand text-center">LITReview</div>
-    {% if username %}
+    {% if user and user.is_authenticated %}
+        <div class="text-center">{{user.username}}</div>
         {% include "app/components/app_navbar.html" %}
     {% endif %}
 </div>

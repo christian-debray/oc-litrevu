@@ -32,7 +32,6 @@ def index(request: HttpRequest) -> HttpResponse:
 def feed(request: HttpRequest) -> HttpResponse:
     """Display the user's feed (todo)."""
     context = {
-        "username": request.user.username,
         "feed_entries": feed_tools.feed_entries(request.user),
     }
     return render(request, "app/feed/feed.html", context)
@@ -55,8 +54,7 @@ def subscriptions(request: HttpRequest) -> forms.SubscribeToUserForm:
     context = {
         "subscribe_form": subscribe_form,
         "following": following,
-        "followers": followers,
-        "username": request.user.username,
+        "followers": followers
     }
     return render(request, "app/subscriptions/subscriptions.html", context=context)
 
@@ -135,7 +133,6 @@ def edit_ticket(request: HttpRequest, ticket_id: int = None) -> HttpResponse:
     else:
         form = forms.EditTicketForm(instance=ticket_instance)
     context = {
-        "username": request.user.username,
         "usecase": usecase,
         "ticket_form": form,
         "ticket_id": ticket_id,
@@ -181,7 +178,6 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
     else:
         form = forms.ReviewForm(instance=review_instance)
     context = {
-        "username": request.user.username,
         "review_form": form,
         "ticket": feed_tools.feed_post_dict(ticket_instance, can_review=False),
         "usecase": "create",
@@ -208,7 +204,6 @@ def edit_review(request: HttpRequest, review_id: int):
         form = forms.ReviewForm(instance=review_instance)
     edit_url = urls.reverse("edit_review", kwargs={"review_id": review_id})
     context = {
-        "username": request.user.username,
         "review_form": form,
         "ticket": feed_tools.feed_post_dict(review_instance.ticket, can_review=False),
         "usecase": "update",
@@ -246,7 +241,6 @@ def create_review(request: HttpRequest):
         ticket_form = forms.EditTicketForm(instance=models.Ticket(user=request.user))
         review_form = forms.ReviewForm(instance=models.Review(user=request.user))
     context = {
-        "username": request.user.username,
         "ticket_form": ticket_form,
         "review_form": review_form,
     }
@@ -358,5 +352,5 @@ def posts(request: HttpRequest) -> HttpResponse:
         key=lambda x: x.get("time_created"),
         reverse=True,
     )
-    context = {"username": request.user.username, "posts": posts}
+    context = {"posts": posts}
     return render(request, "app/posts/posts.html", context=context)
