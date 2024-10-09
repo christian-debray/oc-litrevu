@@ -1,6 +1,9 @@
 {% autoescape on %}
 <div class="container border mb-3">
     {% include "app/components/time_published.html" with time_published=ticket.time_created %}
+    {% if debug %}
+        <span class="debug">(ticket {{ticket.id}})</span>
+    {% endif %}
     {% if ticket.author_name != username %}
         <p>{{ticket.author_name}} a demandé une critique</p>
     {% else %}

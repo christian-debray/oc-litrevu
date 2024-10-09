@@ -24,7 +24,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('litrevu/', include("app.urls")),
-] + debug_toolbar_urls()
+]
 
 """ Include urls to uploaded book cover pitcures in Tickets.
 
@@ -34,4 +34,5 @@ urlpatterns = [
     So we include the media URLs only in developpement...
  """
 if settings.DEBUG:
+    urlpatterns += debug_toolbar_urls()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

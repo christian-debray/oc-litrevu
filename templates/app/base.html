@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
     <title>{% block title %}My amazing site{% endblock %}</title>
     {% load bootstrap5 %}
+    {% load static %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
 <body>

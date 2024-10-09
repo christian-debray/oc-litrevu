@@ -1,0 +1,8 @@
+.debug {
+    display: inline-block;
+    background-color: darkgrey;
+    color: darkslategray;
+    border: solid 1px gray;
+    font-size: small;
+    padding: 1pt;
+}

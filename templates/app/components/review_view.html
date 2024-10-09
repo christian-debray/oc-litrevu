@@ -1,5 +1,8 @@
 {% autoescape on %}
 <div class="container border mb-3">
+    {% if debug %}
+        <span class="debug">(review {{review.id}})</span>
+    {% endif %}
     {% include "app/components/time_published.html" with time_published=review.time_created %}
     {% if review.author_name != username %}
         <p>{{review.author_name}} a posté une critique</p>

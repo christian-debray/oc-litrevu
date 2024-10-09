@@ -64,6 +64,7 @@ def feed_post_dict(obj: Ticket | Review, content_type: str = None, **kwargs) -> 
         post["body"] = obj.body
         post["rating"] = obj.rating
         post["ticket_id"] = obj.ticket.pk
+        # @todo N+1 DB hit
         post["related_ticket"] = feed_post_dict(obj.ticket, "TICKET", **kwargs)
     for k, v in kwargs.items():
         post[k] = v
