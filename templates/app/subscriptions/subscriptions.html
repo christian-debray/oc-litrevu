@@ -8,7 +8,7 @@
         {% csrf_token %}
         <label for="{{ subscribe_form.follow_username.id_for_label }}">Nom d'utilisateur</label>
         {{ subscribe_form.follow_username }}
-        <button type="submit">Envoyer</button>
+        <button type="submit" name="action" value="validate_subscription">Envoyer</button>
         {{ subscribe_form.follow_username.errors }}
     </form>
 </div>

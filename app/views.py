@@ -40,7 +40,7 @@ def feed(request: HttpRequest) -> HttpResponse:
 @login_required
 def subscriptions(request: HttpRequest) -> forms.SubscribeToUserForm:
     """Display the subscription page to subscribe to other users."""
-    if request.method == "POST":
+    if request.POST.get('action') == "validate_subscription":
         subscribe_form = _handle_subscription_form(request)
     else:
         subscribe_form = forms.SubscribeToUserForm()
