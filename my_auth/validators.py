@@ -1,18 +1,28 @@
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 import math
 
 SPECIAL_CHARS = ",?;.:/!§%*$£@&#()[]{}+-"
-# 10 characters including ASCII lower case, upper case, digits
+# Low entropy = 10 characters including ASCII lower case, upper case, digits
 PASSWORD_ENTROPY_LOW = 60
 PASSWORD_ENTROPY_MEDIUM = 77
 PASSWORD_ENTROPY_HIGH = 144
-PASSWORD_STRENGTH_LOWEST = .3
-PASSWORD_STRENGTH_LOW = .5
-PASSWORD_STRENGTH_MEDIUM = .66
-PASSWORD_STRENGTH_HIGH = .75
+PASSWORD_STRENGTH_LOWEST = 0
+PASSWORD_STRENGTH_LOW = 0.3
+PASSWORD_STRENGTH_MEDIUM = 0.66
+PASSWORD_STRENGTH_HIGH = 0.75
+PASSWORD_STRENGTH_HIGHEST = 0.9
+
+STRENGTH_MAP = [
+    (PASSWORD_STRENGTH_LOWEST, "LOWEST"),
+    (PASSWORD_STRENGTH_LOW, "LOW"),
+    (PASSWORD_STRENGTH_MEDIUM, "MEDIUM"),
+    (PASSWORD_STRENGTH_HIGH, "HIGH"),
+    (PASSWORD_STRENGTH_HIGHEST, "HIGHEST"),
+]
 
 
-def password_strength_validator(
+def password_strength_validation(
     password: str,
     min_length: int = 9,
     min_strength: float = PASSWORD_STRENGTH_MEDIUM,
@@ -27,35 +37,33 @@ def password_strength_validator(
     """
     if len(password) < min_length:
         raise ValidationError(
-            "Password should contain at least %(value) characters",
-            params={"value": min_length}
+            _("Password should contain at least %(value) characters"),
+            params={"value": min_length},
+            code="min_length_error"
         )
     stats = password_stats(password)
-    if stats.get("lower", 0) < min_lower \
-            or stats.get("upper", 0) < min_upper \
-            or stats.get("digit", 0) < min_digit \
-            or stats.get("special", 0) < min_special:
-        raise ValidationError("Password does not meet the minimal character requirements.")
+    if (
+        stats.get("lower", 0) < min_lower
+        or stats.get("upper", 0) < min_upper
+        or stats.get("digit", 0) < min_digit
+        or stats.get("special", 0) < min_special
+    ):
+        raise ValidationError(
+            _("Password does not meet the minimal character requirements."), code="min_char_error"
+        )
     strength = password_strength(password, stats)
     if strength < min_strength:
-        raise ValidationError("This password is too weak.")
+        raise ValidationError(_("This password is too weak."), code="min_strength_error")
 
 
-def password_strength_grade(password: str, stats: dict[str, float] = None) -> str:
-    """Returns a qualitative estimation of a password strength, as a grade:
+def password_strength_grade(strength: float) -> str:
+    """Returns a human readable string representing
+    the qualitative estimation of a password strength, as a grade:
     "LOWEST", "LOW", "MEDIUM", "HIGH", "HIGHEST"
     """
-    strength_map = [
-        (PASSWORD_STRENGTH_LOWEST, "LOWEST"),
-        (PASSWORD_STRENGTH_LOW, "LOW"),
-        (PASSWORD_STRENGTH_MEDIUM, "MEDIUM"),
-        (PASSWORD_STRENGTH_HIGH, "HIGH"),
-        (1.0, "HIGHEST")
-    ]
-    strength = password_strength(password, stats)
-    grade = "LOWEST"
-    for s, g in strength_map:
-        if strength <= s:
+    grade = None
+    for s, g in STRENGTH_MAP:
+        if strength < s:
             break
         else:
             grade = g
@@ -69,7 +77,7 @@ def password_strength(password: str, stats: dict[str, float] = None) -> float:
     """
     stats = stats or password_stats(password)
     entropy = password_entropy(password, stats)
-    return min(1.0, (entropy * stats['diversity']) / PASSWORD_ENTROPY_HIGH)
+    return min(1.0, (entropy * stats["diversity"]) / PASSWORD_ENTROPY_HIGH)
 
 
 def password_entropy(password: str, stats: dict[str, float] = None) -> int:
@@ -77,9 +85,9 @@ def password_entropy(password: str, stats: dict[str, float] = None) -> int:
     ie an estimate of the worst-case cost to crack the password by brute-force.
 
     Entropy formula: E = log²(R^L), with:
-     - E: the entropy mesured in bits
-     - R: the character range used in this password
-     - L: the password length
+    - E: the entropy mesured in bits
+    - R: the character range used in this password
+    - L: the password length
 
     see https://nordvpn.com/blog/what-is-password-entropy/#:~:text=You%20can%20calculate%20password%20entropy,password%20entropy%2C%20measured%20in%20bits.
     """
@@ -148,3 +156,113 @@ def password_stats(password: str) -> dict[str, float]:
         "digit": digit,
         "special": special,
     }
+
+
+class StrengthPasswordValidator:
+    """Validate a password strength.
+    Strength is calculated on a password's 'entropy',
+    which increases with the password size and availalble character range.
+
+    Validator settings:
+        - min_strength: float between 0 and 1, defaults to PASSWORD_STRENGTH_MEDIUM.
+            You can use on of the PASSWORD_STRENGTH_* constants defined in this module.
+            min_strength is a qualitative measurement of the password strength,
+            compared to an "optimal" password. See the password_strength() function
+            defined in this module for calculation details.
+        - min_length: (optional) int, defaults to 0, set 0 to ignore.
+            Defines the minimal length of a valid password.
+        - min_lower: (optional) int, defaults to 0, set 0 to ignore.
+            Defines the minimal lowercase characters required in a valid password.
+        - min_upper: (optional) int, defaults to 0, set 0 to ignore.
+            Defines the minimal uppercase characters required in a valid password.
+        - min_digit: (optional) int, defaults to 0, set 0 to ignore.
+            Defines the minimal numeric characters required in a valid password.
+        - min_special: (optional) int, defaults to 0, set 0 to ignore.
+            Defines the minimal non-alphanumeric characters required in a valid password.
+    """
+
+    def __init__(
+        self,
+        min_strength: float = PASSWORD_STRENGTH_MEDIUM,
+        min_length: int = 0,
+        min_lower: int = 0,
+        min_upper: int = 0,
+        min_digit: int = 0,
+        min_special: int = 0,
+    ):
+        self.min_strength: float = min_strength
+        self.min_length: int = min_length
+        self.min_lower: int = min_lower
+        self.min_upper: int = min_upper
+        self.min_digit: int = min_digit
+        self.min_special: int = min_special
+
+    def validate(self, password: str, user=None):
+        """Validates a password based on this validator's settings.
+        Raises a ValidationError when the password doesn't meet the requirements set for this validator.
+        """
+        try:
+            password_strength_validation(
+                password=password,
+                min_length=self.min_length,
+                min_strength=self.min_strength,
+                min_lower=self.min_lower,
+                min_upper=self.min_upper,
+                min_digit=self.min_digit,
+                min_special=self.min_special,
+            )
+        except ValidationError as e:
+            msg = e.message + "\n" + _("Your password") + " "
+            match(e.code):
+                case "min_char_error":
+                    msg += self.char_requirements_help_text()
+                case "min_strength_error":
+                    msg += self.strength_requirements_help_text()
+            raise ValidationError(msg, code=e.code)
+
+    def get_help_text(self) -> str:
+        """Validator help text."""
+        all_requirements = []
+        if strength_requirements := self.strength_requirements_help_text():
+            all_requirements.append(strength_requirements)
+        if char_requirements := self.char_requirements_help_text():
+            all_requirements.append(char_requirements)
+        if len(all_requirements) > 0:
+            return _("Password ") + _("\nand\n").join(all_requirements)
+        else:
+            return ""
+
+    def strength_requirements_help_text(self) -> str:
+        """Displays help on minimal strength requirements."""
+        if self.min_strength > 0:
+            strength_str = _(password_strength_grade(self.min_strength))
+            return _("must have a minimal strength of %s") % (strength_str)
+        else:
+            return ""
+
+    def char_requirements_help_text(self) -> str:
+        """Displays help on minimal character requirements."""
+        char_requirements = []
+        if self.min_length > 0:
+            char_requirements.append(_("at least %d characters") % (self.min_length))
+        if self.min_lower > 0:
+            char_requirements.append(
+                _("at least %d lowercase characters") % (self.min_lower)
+            )
+        if self.min_upper > 0:
+            char_requirements.append(
+                _("at least %d uppercase characters") % (self.min_upper)
+            )
+        if self.min_digit > 0:
+            char_requirements.append(
+                _("at least %d numeric characters") % (self.min_digit)
+            )
+        if self.min_special > 0:
+            char_requirements.append(
+                _("at least %d special characters") % (self.min_special)
+            )
+
+        if len(char_requirements) > 0:
+            return _("must contain:\n") + ",\n".join(char_requirements)
+        else:
+            return ""

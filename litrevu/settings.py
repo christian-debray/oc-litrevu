@@ -109,6 +109,16 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'my_auth.validators.StrengthPasswordValidator',
+        "OPTIONS": {
+            "min_strength": .66,
+            "min_digit": 1,
+            "min_lower": 1,
+            "min_upper": 1,
+            "min_special": 1
+        }
+    }
 ]
 
 # Custom User model
