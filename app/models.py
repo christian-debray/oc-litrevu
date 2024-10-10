@@ -2,8 +2,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from abc import abstractmethod
 from django.urls import reverse
+from abc import abstractmethod
 
 
 class User(AbstractUser):
@@ -13,7 +13,8 @@ class User(AbstractUser):
 
 
 class AbstractPostEntry(models.Model):
-    """Interface to all post entries: Tickets and Reviews"""
+    """Interface to all post entries: Tickets and Reviews.
+    """
 
     class Meta:
         abstract = True
@@ -24,27 +25,41 @@ class AbstractPostEntry(models.Model):
     @property
     @abstractmethod
     def content_type(self) -> str:
-        """Returns a strign describing the entry's content type"""
+        """A string describing the instance's content type.
+        """
         pass
 
-    def can_edit(self, user: User, **kwargs) -> bool:
-        """Returns True if this instance can be edited in a given context."""
-        return user is not None and user.pk == self.user_id
+    @property
+    @abstractmethod
+    def edit_url(self) -> str:
+        """Default string to edit/update a particular instance of this model.
+        """
+        pass
 
-    def can_delete(self, user: User, **kwargs) -> bool:
-        """Returns True if this instance can be deleted in a given context."""
-        return user is not None and user.pk == self.user_id
+    @property
+    @abstractmethod
+    def delete_url(self) -> str:
+        """Default string to delete a particular instance of this model.
+        """
+        pass
+
+    @property
+    def author_id(self) -> int:
+        """ID of the author of this model's instance.
+        """
+        return self.user_id
 
 
 class Ticket(AbstractPostEntry):
+    """A user posts a ticket to request a review on an article or a book.
+    """
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     image = models.ImageField(
         null=True, blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
     )
 
-    @property
-    def content_type(self):
+    def content_type(self) -> str:
         return "TICKET"
 
     @property
@@ -60,6 +75,9 @@ class Ticket(AbstractPostEntry):
 
 
 class Review(AbstractPostEntry):
+    """A review replies to a ticket and rates and reviews an article or a book.
+    We accept at most one review per ticket.
+    """
     ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
         # validates that rating must be between 0 and 5
@@ -68,8 +86,7 @@ class Review(AbstractPostEntry):
     headline = models.CharField(max_length=128)
     body = models.TextField(max_length=8192, blank=True)
 
-    @property
-    def content_type(self):
+    def content_type(self) -> str:
         return "REVIEW"
 
     @property
@@ -82,6 +99,8 @@ class Review(AbstractPostEntry):
 
 
 class UserFollows(models.Model):
+    """Follow Relationship between users.
+    """
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="following"
     )
@@ -98,10 +117,10 @@ class UserFollows(models.Model):
 
 
 class PostEntry:
-    """Proxy object to display tickets and reviews in feeds
+    """Proxy object to display tickets and reviews in feeds.
     """
-    def __init__(self, model_instance: Review | Ticket, user: User):
-        self.instance: Review | Ticket = model_instance
+    def __init__(self, model_instance: AbstractPostEntry, user: User):
+        self.instance: AbstractPostEntry = model_instance
         self.user = user
         self._edit_url = None
         self._delete_url = None
@@ -110,25 +129,55 @@ class PostEntry:
         return getattr(self.instance, name)
 
     @property
+    def content_type(self) -> str:
+        """A string representing the entry's type: REVIEW or TICKET.
+        """
+        return self.instance.content_type
+
+    @property
     def delete_url(self):
-        if self.instance.can_delete(self.user):
+        """The URL where the current user can edit this entry,
+        or None if the current user can't edit the entry.
+        """
+        if self.can_delete:
             return self._delete_url or self.instance.delete_url
         else:
             return None
 
     @delete_url.setter
     def delete_url(self, val):
-        if self.instance.can_delete(self.user):
+        if self.can_delete:
             self._delete_url = val
 
     @property
     def edit_url(self):
-        if self.instance.can_edit(self.user):
+        """The URL where the current user can edit this entry,
+        or None if the current user can't edit the entry.
+        """
+        if self.can_edit:
             return self._edit_url or self.instance.edit_url
         else:
             return None
 
     @edit_url.setter
     def edit_url(self, val):
-        if self.instance.can_edit(self.user):
+        if self.can_edit:
             self._edit_url = val
+
+    @property
+    def can_edit(self) -> bool:
+        """True if the current user can edit this entry.
+        """
+        return self.is_author
+
+    @property
+    def can_delete(self) -> bool:
+        """True if the current user can delete this entry.
+        """
+        return self.is_author
+
+    @property
+    def is_author(self) -> bool:
+        """True if the current user is the author of this entry.
+        """
+        return self.instance.author_id == self.user.pk
