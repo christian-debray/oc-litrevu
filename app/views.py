@@ -8,7 +8,6 @@ from django import urls
 from . import forms
 from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
-from . import feed as feed_tools
 from . import subscriptions as subscription_tools
 from . import posts as post_tools
 from . import helpers
@@ -30,10 +29,10 @@ def index(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def feed(request: HttpRequest) -> HttpResponse:
-    """Display the user's feed (todo)."""
-    u_list = subscription_tools.followed_users_or_self(request.user)
+    """Display the user's feed
+    """
     tickets = Ticket.with_user_manager.own_or_followed(request.user)
-    reviews = feed_tools.feed_reviews(user=request.user, following=u_list)
+    reviews = Review.with_user_manager.own_or_followed(request.user)
     entries = sorted(
         chain(tickets, reviews), key=lambda x: x.time_created, reverse=True
     )
@@ -204,7 +203,7 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
 @login_required
 def edit_review(request: HttpRequest, review_id: int):
     """Updates an existing review."""
-    review_instance = get_object_or_404(Review, pk=review_id, user=request.user)
+    review_instance = get_object_or_404(Review.with_user_manager, pk=review_id, user=request.user)
     return _edit_or_create_review(
         request=request,
         usecase="update",
@@ -292,14 +291,8 @@ def delete_review(request: HttpRequest, review_id: int):
 @login_required
 def posts(request: HttpRequest) -> HttpResponse:
     """Display all reviews and tickets posted by a user."""
-    # tickets = Ticket.objects.filter(user=request.user).select_related("user")
-    tickets = Ticket.with_user_manager.from_user(request.user)
-    reviews = (
-        Review.objects.filter(user=request.user)
-        .select_related("user")
-        .select_related("ticket")
-        .select_related("ticket__user")
-    )
+    tickets = Ticket.with_user_manager.own(request.user)
+    reviews = Review.with_user_manager.own(request.user)
     posts = sorted(
         [
             post_tools.prepare_post_entry(

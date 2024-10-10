@@ -5,7 +5,7 @@
         <span class="debug">(ticket {{ticket.id}} by {{ticket.user_id}})</span>
     {% endif %}
     {% if ticket.user_id != request.user.id %}
-        <p>{{ticket.author_name}} a demandé une critique</p>
+        <p>{{ticket.user.username}} a demandé une critique</p>
     {% else %}
         <p>Vous avez demandé une critique</p>
     {% endif %}

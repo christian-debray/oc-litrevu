@@ -45,12 +45,33 @@ class AbstractPostEntry(models.Model):
         return self.user_id
 
 
-class TicketUserManager(models.Manager):
+class UserManager(models.Manager):
+    """Base class of user-aware managers.
+
+    Provides filters on Post Entry ownership, relation between a user and Post Entry author, etc...
+    """
+
+    def own(self, user: User):
+        """Filter: Instances posted by user.
+        """
+        return self.get_queryset().filter(user=user)
+
+    def followed(self, user: User):
+        """Filter: Instances followed by user.
+        """
+        return self.get_queryset().filter(user__followed_by__user_id=user.pk)
+
+    def own_or_followed(self, user: User):
+        """Filter: Union of followed_by_user and from_user filters.
+        """
+        return self.own(user) | self.followed(user)
+
+
+class TicketUserManager(UserManager):
     """User-aware Ticket Manager.
 
     Annotates Ticket instances with:
       - total_reviews: the number of related reviews and the ticket author's name.
-      - author_name: the ticket author's name
 
     Provides filters on ticket ownership, relation between a user and ticket author, etc...
     """
@@ -59,39 +80,34 @@ class TicketUserManager(models.Manager):
             super()
             .get_queryset()
             .select_related("user")
-            .annotate(
-                total_reviews=models.Count("review"),
-                author_name=models.F("user__username"))
+            .annotate(total_reviews=models.Count("review"))
             .only("pk", "user_id", "title", "image", "description", "time_created")
         )
 
-    def from_user(self, user: User):
-        """Filter: Tickets posted by user.
-        """
-        return self.get_queryset().filter(user=user)
 
-    def followed_by_user(self, user: User):
-        """Filter: Tickets followed by user.
-        """
-        return self.get_queryset().filter(user__followed_by__user_id=user.pk)
-
-    def own_or_followed(self, user: User):
-        """Filter: Union of followed_by_user and from_user filters.
-        """
-        return self.from_user(user) | self.followed_by_user(user)
+class ReviewUserManager(UserManager):
+    """A User-aware manager to query the Review model.
+    """
+    def get_queryset(self) -> models.QuerySet:
+        return (
+            super().get_queryset()
+            .select_related("user")
+            .select_related("ticket")
+            .select_related("ticket__user")
+        )
 
 
 class Ticket(AbstractPostEntry):
     """A user posts a ticket to request a review on an article or a book."""
+
+    objects = models.Manager()
+    with_user_manager = TicketUserManager()
 
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     image = models.ImageField(
         null=True, blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
     )
-
-    objects = models.Manager()
-    with_user_manager = TicketUserManager()
 
     def content_type(self) -> str:
         return "TICKET"
@@ -113,6 +129,9 @@ class Review(AbstractPostEntry):
     We accept at most one review per ticket.
     """
 
+    objects = models.Manager()
+    with_user_manager = ReviewUserManager()
+
     ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
         # validates that rating must be between 0 and 5
@@ -131,6 +150,9 @@ class Review(AbstractPostEntry):
     @property
     def delete_url(self) -> str:
         return reverse("delete_review", kwargs={"review_id": self.pk})
+
+    def __str__(self) -> str:
+        return self.headline
 
 
 class UserFollows(models.Model):
@@ -152,7 +174,8 @@ class UserFollows(models.Model):
 
 
 class PostEntry:
-    """Proxy object to display tickets and reviews in feeds."""
+    """Proxy object to display tickets and reviews.
+    """
 
     def __init__(self, model_instance: AbstractPostEntry, user: User):
         self.instance: AbstractPostEntry = model_instance

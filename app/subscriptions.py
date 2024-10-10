@@ -25,7 +25,7 @@ def subscribe_to_user(user: User, follow_username: str):
     """Try to follow another user.
 
     - follow_username must be the exact username of a user not already followed.
-    - Raises DoesNotExist if the user ot follow is not found.
+    - Raises DoesNotExist if the user to follow is not found.
     """
     not_followed = User.objects.exclude(followed_by__user=user).exclude(pk=user.pk)
     follow_user = not_followed.get(username=follow_username)
