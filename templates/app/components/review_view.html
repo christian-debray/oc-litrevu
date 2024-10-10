@@ -1,19 +1,21 @@
 {% autoescape on %}
 <div class="container border mb-3">
     {% if debug %}
-        <span class="debug">(review {{review.id}})</span>
+        <span class="debug">(review {{review.id}} by {{review.user_id}})</span>
     {% endif %}
     {% include "app/components/time_published.html" with time_published=review.time_created %}
-    {% if review.author_name != username %}
-        <p>{{review.author_name}} a posté une critique</p>
+    {% if review.user_id != request.user.id %}
+        <p>{{review.user.username}} a posté une critique</p>
     {% else %}
         <p>Vous avez posté une critique</p>
     {% endif %}
-    <p><strong>{{review.title}}</strong> - {{review.rating}}/5</p>
+    <p><strong>{{review.headline}}</strong> - {{review.rating}}/5</p>
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>
-    {% include "app/components/ticket_request_view.html" with ticket=review.related_ticket %}
-    {% include "app/components/post_entry_commands.html" with post_commands=review.commands %}
+    {% include "app/components/ticket_request_view.html" with ticket=review.ticket display_commands=False %}
+    {% if display_commands %}
+        {% include "app/components/post_entry_commands.html" with post_entry=review %}
+    {% endif %}
 </div>
 {% endautoescape %}

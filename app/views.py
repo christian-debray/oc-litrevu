@@ -1,8 +1,7 @@
 from itertools import chain
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponse
-from .models import User, Ticket
-from . import models
+from .models import User, Ticket, Review
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django import urls
@@ -32,9 +31,13 @@ def index(request: HttpRequest) -> HttpResponse:
 @login_required
 def feed(request: HttpRequest) -> HttpResponse:
     """Display the user's feed (todo)."""
-    context = {
-        "feed_entries": feed_tools.feed_entries(request.user),
-    }
+    u_list = subscription_tools.followed_users_or_self(request.user)
+    tickets = feed_tools.feed_tickets(user=request.user, following=u_list)
+    reviews = feed_tools.feed_reviews(user=request.user, following=u_list)
+    entries = sorted(
+        chain(tickets, reviews), key=lambda x: x.time_created, reverse=True
+    )
+    context = {"feed_entries": entries, "display_commands": False}
     return render(request, "app/feed/feed.html", context)
 
 
@@ -133,7 +136,7 @@ def edit_ticket(request: HttpRequest, ticket_id: int) -> HttpResponse:
 def _edit_or_create_ticket(
     request: HttpRequest,
     usecase: str,
-    ticket_instance: models.Ticket,
+    ticket_instance: Ticket,
     edit_url: str,
     success_msg_tpl: str,
 ):
@@ -187,7 +190,7 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
         pk=ticket_id,
         user__in=subscription_tools.followed_users_or_self(user=request.user),
     )
-    review_instance = models.Review(ticket=ticket_instance, user=request.user)
+    review_instance = Review(ticket=ticket_instance, user=request.user)
     return _edit_or_create_review(
         request=request,
         usecase="create",
@@ -201,7 +204,7 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
 @login_required
 def edit_review(request: HttpRequest, review_id: int):
     """Updates an existing review."""
-    review_instance = get_object_or_404(models.Review, pk=review_id, user=request.user)
+    review_instance = get_object_or_404(Review, pk=review_id, user=request.user)
     return _edit_or_create_review(
         request=request,
         usecase="update",
@@ -215,8 +218,8 @@ def edit_review(request: HttpRequest, review_id: int):
 def _edit_or_create_review(
     request: HttpRequest,
     usecase: str,
-    ticket_instance: models.Ticket,
-    review_instance: models.Review,
+    ticket_instance: Ticket,
+    review_instance: Review,
     success_msg_tpl: str,
     edit_url: str,
 ) -> HttpResponse:
@@ -224,7 +227,7 @@ def _edit_or_create_review(
     if request.POST.get("action") == "validate_review":
         form = forms.ReviewForm(request.POST, instance=review_instance)
         if form.is_valid():
-            review: models.Review = form.save()
+            review: Review = form.save()
             messages.success(
                 request, success_msg_tpl % ({"ticket_id": review.ticket.pk})
             )
@@ -249,14 +252,12 @@ def create_review(request: HttpRequest):
     """
     if request.POST.get("action") == "validate_review":
         ticket_form = forms.EditTicketForm(
-            request.POST, request.FILES, instance=models.Ticket(user=request.user)
+            request.POST, request.FILES, instance=Ticket(user=request.user)
         )
-        review_form = forms.ReviewForm(
-            request.POST, instance=models.Review(user=request.user)
-        )
+        review_form = forms.ReviewForm(request.POST, instance=Review(user=request.user))
         if ticket_form.is_valid() and review_form.is_valid():
-            ticket_instance: models.Ticket = ticket_form.save()
-            review_instance: models.Review = review_form.save(commit=False)
+            ticket_instance: Ticket = ticket_form.save()
+            review_instance: Review = review_form.save(commit=False)
             review_instance.ticket = ticket_instance
             review_instance.save()
             messages.success(
@@ -266,8 +267,8 @@ def create_review(request: HttpRequest):
             )
             return redirect("feed")
     else:
-        ticket_form = forms.EditTicketForm(instance=models.Ticket(user=request.user))
-        review_form = forms.ReviewForm(instance=models.Review(user=request.user))
+        ticket_form = forms.EditTicketForm(instance=Ticket(user=request.user))
+        review_form = forms.ReviewForm(instance=Review(user=request.user))
     context = {
         "ticket_form": ticket_form,
         "review_form": review_form,
@@ -278,7 +279,7 @@ def create_review(request: HttpRequest):
 @login_required
 def delete_review(request: HttpRequest, review_id: int):
     """Deletes a review written by the current user."""
-    review_instance = get_object_or_404(models.Review, pk=review_id, user=request.user)
+    review_instance = get_object_or_404(Review, pk=review_id, user=request.user)
     review_instance.delete()
     messages.success(
         request,
@@ -291,31 +292,22 @@ def delete_review(request: HttpRequest, review_id: int):
 @login_required
 def posts(request: HttpRequest) -> HttpResponse:
     """Display all reviews and tickets posted by a user."""
-    user_tickets = models.Ticket.objects.filter(user=request.user).select_related(
-        "user"
-    )
-    user_reviews = (
-        models.Review.objects.filter(user=request.user)
+    tickets = Ticket.objects.filter(user=request.user).select_related("user")
+    reviews = (
+        Review.objects.filter(user=request.user)
         .select_related("user")
         .select_related("ticket")
+        .select_related("ticket__user")
     )
     posts = sorted(
-        chain(
-            [
-                post_tools.prepare_post_entry(
-                    post_obj=x, request=request, with_commands=True, next_url="posts"
-                )
-                for x in user_tickets
-            ],
-            [
-                post_tools.prepare_post_entry(
-                    post_obj=x, request=request, with_commands=True, next_url="posts"
-                )
-                for x in user_reviews
-            ],
-        ),
-        key=lambda x: x.get("time_created"),
+        [
+            post_tools.prepare_post_entry(
+                post_obj=x, with_commands=True, next_url="posts", request=request
+            )
+            for x in chain(tickets, reviews)
+        ],
+        key=lambda x: x.time_created,
         reverse=True,
     )
-    context = {"posts": posts}
+    context = {"posts": posts, "display_commands": True}
     return render(request, "app/posts/posts.html", context=context)

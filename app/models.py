@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from abc import abstractmethod
+from django.urls import reverse
 
 
 class User(AbstractUser):
@@ -11,68 +12,76 @@ class User(AbstractUser):
     """
 
 
-class AbstractPostEntry:
+class AbstractPostEntry(models.Model):
     """Interface to all post entries: Tickets and Reviews"""
 
-    def available_commands(self, user: User, **kwargs) -> list[str]:
-        """Returns a list of command names available for this instance
-        to a particular user.
-        """
-        commands = []
-        if self.can_edit(user):
-            commands.append("edit")
-        if self.can_delete(user):
-            commands.append("delete")
-        return commands
+    class Meta:
+        abstract = True
+
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    time_created = models.DateTimeField(auto_now_add=True)
+
+    @property
+    @abstractmethod
+    def content_type(self) -> str:
+        """Returns a strign describing the entry's content type"""
+        pass
 
     def can_edit(self, user: User, **kwargs) -> bool:
         """Returns True if this instance can be edited in a given context."""
-        return user is not None and user.pk == self.author_id()
+        return user is not None and user.pk == self.user_id
 
     def can_delete(self, user: User, **kwargs) -> bool:
         """Returns True if this instance can be deleted in a given context."""
-        return user is not None and user.pk == self.author_id()
-
-    @abstractmethod
-    def author_id(self) -> int:
-        """Returns the id of the user who posted this entry."""
-        pass
+        return user is not None and user.pk == self.user_id
 
 
-class Ticket(models.Model, AbstractPostEntry):
+class Ticket(AbstractPostEntry):
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     image = models.ImageField(
         null=True, blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
     )
-    time_created = models.DateTimeField(auto_now_add=True)
 
-    def author_id(self) -> int:
-        return self.user_id
+    @property
+    def content_type(self):
+        return "TICKET"
+
+    @property
+    def edit_url(self) -> str:
+        return reverse("edit_ticket", kwargs={"ticket_id": self.pk})
+
+    @property
+    def delete_url(self) -> str:
+        return reverse("delete_ticket", kwargs={"ticket_id": self.pk})
 
     def __str__(self):
         return self.title
 
 
-class Review(models.Model, AbstractPostEntry):
+class Review(AbstractPostEntry):
     ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
         # validates that rating must be between 0 and 5
         validators=[MinValueValidator(0), MaxValueValidator(5)]
     )
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     headline = models.CharField(max_length=128)
     body = models.TextField(max_length=8192, blank=True)
-    time_created = models.DateTimeField(auto_now_add=True)
 
-    def author_id(self) -> int:
-        return self.user_id
+    @property
+    def content_type(self):
+        return "REVIEW"
+
+    @property
+    def edit_url(self) -> str:
+        return reverse("edit_review", kwargs={"review_id": self.pk})
+
+    @property
+    def delete_url(self) -> str:
+        return reverse("delete_review", kwargs={"review_id": self.pk})
 
 
 class UserFollows(models.Model):
-    # Your UserFollows model definition goes here
-
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="following"
     )
@@ -86,3 +95,40 @@ class UserFollows(models.Model):
         # ensures we don't get multiple UserFollows instances
         # for unique user-user_followed pairs
         unique_together = ("user", "followed_user")
+
+
+class PostEntry:
+    """Proxy object to display tickets and reviews in feeds
+    """
+    def __init__(self, model_instance: Review | Ticket, user: User):
+        self.instance: Review | Ticket = model_instance
+        self.user = user
+        self._edit_url = None
+        self._delete_url = None
+
+    def __getattr__(self, name: str):
+        return getattr(self.instance, name)
+
+    @property
+    def delete_url(self):
+        if self.instance.can_delete(self.user):
+            return self._delete_url or self.instance.delete_url
+        else:
+            return None
+
+    @delete_url.setter
+    def delete_url(self, val):
+        if self.instance.can_delete(self.user):
+            self._delete_url = val
+
+    @property
+    def edit_url(self):
+        if self.instance.can_edit(self.user):
+            return self._edit_url or self.instance.edit_url
+        else:
+            return None
+
+    @edit_url.setter
+    def edit_url(self, val):
+        if self.instance.can_edit(self.user):
+            self._edit_url = val

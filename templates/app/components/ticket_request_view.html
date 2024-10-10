@@ -2,10 +2,10 @@
 <div class="container border mb-3">
     {% include "app/components/time_published.html" with time_published=ticket.time_created %}
     {% if debug %}
-        <span class="debug">(ticket {{ticket.id}})</span>
+        <span class="debug">(ticket {{ticket.id}} by {{ticket.user_id}})</span>
     {% endif %}
-    {% if ticket.author_name != username %}
-        <p>{{ticket.author_name}} a demandé une critique</p>
+    {% if ticket.user_id != request.user.id %}
+        <p>{{ticket.user.username}} a demandé une critique</p>
     {% else %}
         <p>Vous avez demandé une critique</p>
     {% endif %}
@@ -15,15 +15,17 @@
     {% endif %}
     {% if ticket.image %}
         <div class="w-25">
-            <img alt="{{ticket.title}}" class="img-fluid" src="{{ ticket.image }}">
+            <img alt="{{ticket.title}}" class="img-fluid" src="{{ ticket.image.url }}">
         </div>
     {% endif %}
-    {% if ticket.num_reviews is not None %}
-        <p>{{ticket.num_reviews}} reviews</p>
+    {% if ticket.total_reviews is not None %}
+        <p>{{ticket.total_reviews}} reviews</p>
     {% endif %}
-    {% if ticket.can_review %}
-    <a class="btn btn-primary" href="{% url "review_for_ticket" ticket.ticket_id %}">Créer une critique</a>
+    {% if ticket.total_reviews == 0 %}
+        <a class="btn btn-primary" href="{% url "review_for_ticket" ticket_id=ticket.pk %}">Créer une critique</a>
     {% endif %}
-    {% include "app/components/post_entry_commands.html" with post_commands=ticket.commands %}
+    {% if display_commands %}
+        {% include "app/components/post_entry_commands.html" with post_entry=ticket %}
+    {% endif %}
 </div>
 {% endautoescape %}
