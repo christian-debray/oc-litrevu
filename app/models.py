@@ -13,8 +13,7 @@ class User(AbstractUser):
 
 
 class AbstractPostEntry(models.Model):
-    """Interface to all post entries: Tickets and Reviews.
-    """
+    """Interface to all post entries: Tickets and Reviews."""
 
     class Meta:
         abstract = True
@@ -25,39 +24,74 @@ class AbstractPostEntry(models.Model):
     @property
     @abstractmethod
     def content_type(self) -> str:
-        """A string describing the instance's content type.
-        """
+        """A string describing the instance's content type."""
         pass
 
     @property
     @abstractmethod
     def edit_url(self) -> str:
-        """Default string to edit/update a particular instance of this model.
-        """
+        """Default string to edit/update a particular instance of this model."""
         pass
 
     @property
     @abstractmethod
     def delete_url(self) -> str:
-        """Default string to delete a particular instance of this model.
-        """
+        """Default string to delete a particular instance of this model."""
         pass
 
     @property
     def author_id(self) -> int:
-        """ID of the author of this model's instance.
-        """
+        """ID of the author of this model's instance."""
         return self.user_id
 
 
-class Ticket(AbstractPostEntry):
-    """A user posts a ticket to request a review on an article or a book.
+class TicketUserManager(models.Manager):
+    """User-aware Ticket Manager.
+
+    Annotates Ticket instances with:
+      - total_reviews: the number of related reviews and the ticket author's name.
+      - author_name: the ticket author's name
+
+    Provides filters on ticket ownership, relation between a user and ticket author, etc...
     """
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("user")
+            .annotate(
+                total_reviews=models.Count("review"),
+                author_name=models.F("user__username"))
+            .only("pk", "user_id", "title", "image", "description", "time_created")
+        )
+
+    def from_user(self, user: User):
+        """Filter: Tickets posted by user.
+        """
+        return self.get_queryset().filter(user=user)
+
+    def followed_by_user(self, user: User):
+        """Filter: Tickets followed by user.
+        """
+        return self.get_queryset().filter(user__followed_by__user_id=user.pk)
+
+    def own_or_followed(self, user: User):
+        """Filter: Union of followed_by_user and from_user filters.
+        """
+        return self.from_user(user) | self.followed_by_user(user)
+
+
+class Ticket(AbstractPostEntry):
+    """A user posts a ticket to request a review on an article or a book."""
+
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     image = models.ImageField(
         null=True, blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
     )
+
+    objects = models.Manager()
+    with_user_manager = TicketUserManager()
 
     def content_type(self) -> str:
         return "TICKET"
@@ -78,6 +112,7 @@ class Review(AbstractPostEntry):
     """A review replies to a ticket and rates and reviews an article or a book.
     We accept at most one review per ticket.
     """
+
     ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
         # validates that rating must be between 0 and 5
@@ -99,8 +134,8 @@ class Review(AbstractPostEntry):
 
 
 class UserFollows(models.Model):
-    """Follow Relationship between users.
-    """
+    """Follow Relationship between users."""
+
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="following"
     )
@@ -117,8 +152,8 @@ class UserFollows(models.Model):
 
 
 class PostEntry:
-    """Proxy object to display tickets and reviews in feeds.
-    """
+    """Proxy object to display tickets and reviews in feeds."""
+
     def __init__(self, model_instance: AbstractPostEntry, user: User):
         self.instance: AbstractPostEntry = model_instance
         self.user = user
@@ -130,8 +165,7 @@ class PostEntry:
 
     @property
     def content_type(self) -> str:
-        """A string representing the entry's type: REVIEW or TICKET.
-        """
+        """A string representing the entry's type: REVIEW or TICKET."""
         return self.instance.content_type
 
     @property
@@ -166,18 +200,15 @@ class PostEntry:
 
     @property
     def can_edit(self) -> bool:
-        """True if the current user can edit this entry.
-        """
+        """True if the current user can edit this entry."""
         return self.is_author
 
     @property
     def can_delete(self) -> bool:
-        """True if the current user can delete this entry.
-        """
+        """True if the current user can delete this entry."""
         return self.is_author
 
     @property
     def is_author(self) -> bool:
-        """True if the current user is the author of this entry.
-        """
+        """True if the current user is the author of this entry."""
         return self.instance.author_id == self.user.pk

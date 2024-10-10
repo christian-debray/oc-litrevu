@@ -32,7 +32,7 @@ def index(request: HttpRequest) -> HttpResponse:
 def feed(request: HttpRequest) -> HttpResponse:
     """Display the user's feed (todo)."""
     u_list = subscription_tools.followed_users_or_self(request.user)
-    tickets = feed_tools.feed_tickets(user=request.user, following=u_list)
+    tickets = Ticket.with_user_manager.own_or_followed(request.user)
     reviews = feed_tools.feed_reviews(user=request.user, following=u_list)
     entries = sorted(
         chain(tickets, reviews), key=lambda x: x.time_created, reverse=True
@@ -186,7 +186,7 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
     Ticket must be visible in the user's feed, otherwise the view will raise a 404.
     """
     ticket_instance = get_object_or_404(
-        Ticket,
+        Ticket.with_user_manager,
         pk=ticket_id,
         user__in=subscription_tools.followed_users_or_self(user=request.user),
     )
@@ -208,7 +208,7 @@ def edit_review(request: HttpRequest, review_id: int):
     return _edit_or_create_review(
         request=request,
         usecase="update",
-        ticket_instance=review_instance.ticket,
+        ticket_instance=Ticket.with_user_manager.get(pk=review_instance.ticket_id),
         review_instance=review_instance,
         success_msg_tpl=_("Updated your review in reply to ticket #%(ticket_id)d"),
         edit_url=urls.reverse("edit_review", kwargs={"review_id": review_id}),
@@ -236,7 +236,7 @@ def _edit_or_create_review(
         form = forms.ReviewForm(instance=review_instance)
     context = {
         "review_form": form,
-        "ticket": post_tools.feed_post_dict(ticket_instance, can_review=False),
+        "ticket": ticket_instance,
         "usecase": usecase,
         "edit_url": helpers.add_next_url(edit_url, request),
     }
@@ -248,7 +248,7 @@ def create_review(request: HttpRequest):
     """Creates a review from scratch.
     POST data muts also contain the ticket data.
     Both ticket and review data must be valid to update the model.
-    Rediretc to user's feed on success.
+    Redirect to user's feed on success.
     """
     if request.POST.get("action") == "validate_review":
         ticket_form = forms.EditTicketForm(
@@ -292,7 +292,8 @@ def delete_review(request: HttpRequest, review_id: int):
 @login_required
 def posts(request: HttpRequest) -> HttpResponse:
     """Display all reviews and tickets posted by a user."""
-    tickets = Ticket.objects.filter(user=request.user).select_related("user")
+    # tickets = Ticket.objects.filter(user=request.user).select_related("user")
+    tickets = Ticket.with_user_manager.from_user(request.user)
     reviews = (
         Review.objects.filter(user=request.user)
         .select_related("user")

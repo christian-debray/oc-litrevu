@@ -7,7 +7,7 @@
         {% if entry.content_type == "REVIEW" %}
             {% include "app/components/review_view.html" with review=entry %}
         {% elif  entry.content_type == "TICKET" %}
-            {% include "app/components/ticket_request_view.html" with ticket=entry %}
+            {% include "app/components/ticket_request_view.html" with ticket=entry display_commands=True display_review_btn=False %}
         {% endif %}
     {% endfor %}
 </div>

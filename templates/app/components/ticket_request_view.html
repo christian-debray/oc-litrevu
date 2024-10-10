@@ -5,7 +5,7 @@
         <span class="debug">(ticket {{ticket.id}} by {{ticket.user_id}})</span>
     {% endif %}
     {% if ticket.user_id != request.user.id %}
-        <p>{{ticket.user.username}} a demandé une critique</p>
+        <p>{{ticket.author_name}} a demandé une critique</p>
     {% else %}
         <p>Vous avez demandé une critique</p>
     {% endif %}
@@ -21,7 +21,7 @@
     {% if ticket.total_reviews is not None %}
         <p>{{ticket.total_reviews}} reviews</p>
     {% endif %}
-    {% if ticket.total_reviews == 0 %}
+    {% if display_review_btn and ticket.total_reviews == 0 %}
         <a class="btn btn-primary" href="{% url "review_for_ticket" ticket_id=ticket.pk %}">Créer une critique</a>
     {% endif %}
     {% if display_commands %}
