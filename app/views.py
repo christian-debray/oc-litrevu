@@ -185,9 +185,8 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
     Ticket must be visible in the user's feed, otherwise the view will raise a 404.
     """
     ticket_instance = get_object_or_404(
-        Ticket.with_user_manager,
-        pk=ticket_id,
-        user__in=subscription_tools.followed_users_or_self(user=request.user),
+        Ticket.with_user_manager.own_or_followed(request.user),
+        pk=ticket_id
     )
     review_instance = Review(ticket=ticket_instance, user=request.user)
     return _edit_or_create_review(
