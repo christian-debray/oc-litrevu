@@ -12,6 +12,9 @@ class SubscribeToUserForm(forms.Form):
         validators=[validators.ProhibitNullCharactersValidator, validators.MaxLengthValidator(150)],
     )
 
+    def clean_follow_username(self):
+        return self.cleaned_data.get('follow_username').lower()
+
 
 class EditTicketForm(forms.ModelForm):
     class Meta:

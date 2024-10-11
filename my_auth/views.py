@@ -16,10 +16,11 @@ def register(request: HttpRequest):
     if request.method == "POST":
         register_form = RegisterForm(request.POST)
         if register_form.is_valid():
-            username = register_form.cleaned_data.get("username")
+            username = register_form.cleaned_data.get("username").lower()
+            display_name = register_form.cleaned_data.get("username")
             password = register_form.cleaned_data.get("password")
             try:
-                user = User.objects.create_user(username=username, password=password)
+                user = User.objects.create_user(username=username, display_name=display_name, password=password)
                 user.save()
                 login(request=request, user=user)
                 return _redirect_after_authentication(request)
@@ -40,7 +41,7 @@ def auth(request: HttpRequest):
     if request.method == "POST":
         auth_form = AuthForm(request.POST)
         if auth_form.is_valid():
-            username = auth_form.cleaned_data.get("username")
+            username = auth_form.cleaned_data.get("username").lower()
             password = auth_form.cleaned_data.get("password")
             user = authenticate(request=request, username=username, password=password)
             if user is not None:

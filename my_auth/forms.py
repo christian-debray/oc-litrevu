@@ -7,8 +7,8 @@ from app.models import User
 
 
 class AuthForm(forms.Form):
-    """Authentication form requires only two fields, user and password.
-    Validation process differs from Registration form, ."""
+    """Authentication form requires only two fields, username and password.
+    Validation process differs from Registration form."""
     username = forms.CharField(
         required=True,
         validators=[validators.ProhibitNullCharactersValidator, validators.MaxLengthValidator(150)],
@@ -17,6 +17,11 @@ class AuthForm(forms.Form):
         widget=forms.PasswordInput(render_value=False),
         validators=[validators.ProhibitNullCharactersValidator, validators.MaxLengthValidator(128)],
     )
+
+    def clean_username(self):
+        """Username is not case-sensitive.
+        """
+        return self.cleaned_data.get('username').lower()
 
 
 class RegisterForm(forms.ModelForm):

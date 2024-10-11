@@ -4,12 +4,32 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from abc import abstractmethod
+from django.utils.translation import gettext as _
 
 
 class User(AbstractUser):
     """Our custom User class
     see https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#auth-custom-user
+
+    Additionnal fields:
+
+    - *display_name*: Record the user name as it got entered during registration.
+                Used for display only. *User.username* will store the lowercase version of the *display_name*.
     """
+    display_name = models.CharField(
+        max_length=150,
+        null=False,
+        verbose_name=_("username"),
+        validators=[AbstractUser.username_validator],
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.display_name:
+            self.display_name = self.username
+        super().save(*args, **kwargs)
 
 
 class AbstractPostEntry(models.Model):
