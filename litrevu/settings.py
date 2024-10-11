@@ -97,12 +97,13 @@ AUTH_PASSWORD_VALIDATORS = [
             "max_similarity": 0.7
         }
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        "OPTIONS": {
-            "min_length": 8,
-        }
-    },
+    # we use our custom password strength validator instead
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    #     "OPTIONS": {
+    #         "min_length": 8,
+    #     }
+    # },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
@@ -112,11 +113,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'my_auth.validators.StrengthPasswordValidator',
         "OPTIONS": {
-            "min_strength": .66,
-            "min_digit": 1,
-            "min_lower": 1,
-            "min_upper": 1,
-            "min_special": 1
+            "min_strength": "PASSWORD_STRENGTH_MEDIUM",
+            "min_digit": 0,
+            "min_lower": 0,
+            "min_upper": 0,
+            "min_special": 0
         }
     }
 ]

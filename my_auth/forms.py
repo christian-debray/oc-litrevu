@@ -24,11 +24,16 @@ class RegisterForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["username", "password"]
-        widgets = {"password": forms.PasswordInput(render_value=False)}
+
+    password = forms.CharField(
+        required=True,
+        widget=forms.PasswordInput(render_value=False),
+        help_text=password_validation.password_validators_help_text_html()
+    )
 
     password_confirm = forms.CharField(
         required=True,
-        widget=forms.PasswordInput(render_value=False)
+        widget=forms.PasswordInput(render_value=False),
     )
 
     def clean_password(self):
@@ -43,14 +48,8 @@ class RegisterForm(forms.ModelForm):
         # some password validators require a User object: UserAttributeSimilarityValidator
         test_user = User(username=username, password=password)
         password_validation.validate_password(password, user=test_user)
-        # also use our custom password strength validation
-        # password_strength_validator(password=password, min_lower=1, min_upper=1, min_digit=1, min_special=1)
-        return password
-
-    def clean_password_confirm(self):
-        """Validate password confirmation"""
-        password = self.cleaned_data.get("password")
-        password_confirm = self.cleaned_data.get("password_confirm")
+        # finally check password confirmation matches:
+        password_confirm = self.data.get("password_confirm")
         if (password_confirm is None) or (password != password_confirm):
             raise ValidationError(_("Password and password confirmation must match."), code="invalid")
-        return password_confirm
+        return password

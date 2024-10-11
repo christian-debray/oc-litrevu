@@ -15,11 +15,11 @@ PASSWORD_STRENGTH_HIGH = 0.75
 PASSWORD_STRENGTH_HIGHEST = 0.9
 
 STRENGTH_MAP = [
-    (PASSWORD_STRENGTH_LOWEST, _("lowest_password_strength")),
-    (PASSWORD_STRENGTH_LOW, _("low_password_strength")),
-    (PASSWORD_STRENGTH_MEDIUM, _("medium_password_strength")),
-    (PASSWORD_STRENGTH_HIGH, _("high_password_strength")),
-    (PASSWORD_STRENGTH_HIGHEST, _("highest_password_strength")),
+    (PASSWORD_STRENGTH_LOWEST, _("lowest_password_strength"), "PASSWORD_STRENGTH_LOWEST"),
+    (PASSWORD_STRENGTH_LOW, _("low_password_strength"), "PASSWORD_STRENGTH_LOW"),
+    (PASSWORD_STRENGTH_MEDIUM, _("medium_password_strength"), "PASSWORD_STRENGTH_MEDIUM"),
+    (PASSWORD_STRENGTH_HIGH, _("high_password_strength"), "PASSWORD_STRENGTH_HIGH"),
+    (PASSWORD_STRENGTH_HIGHEST, _("highest_password_strength"), "PASSWORD_STRENGTH_HIGHEST"),
 ]
 
 
@@ -60,13 +60,20 @@ def password_strength_validation(
         )
 
 
+def password_strength_from_symbol(strength_symbol: str) -> float:
+    """Interprets the parameter as a constant name defining a password strength,
+    as defined in this module in STRENGTH_MAP"""
+    map = {symb: val for val, _, symb in STRENGTH_MAP}
+    return map.get(strength_symbol, None)
+
+
 def password_strength_grade(strength: float) -> str:
     """Returns a human readable string representing
     the qualitative estimation of a password strength, as a grade:
     "LOWEST", "LOW", "MEDIUM", "HIGH", "HIGHEST"
     """
     grade = None
-    for s, g in STRENGTH_MAP:
+    for s, g, x in STRENGTH_MAP:
         if strength < s:
             break
         else:
@@ -169,6 +176,7 @@ class StrengthPasswordValidator:
 
     Validator settings:
         - min_strength: float between 0 and 1, defaults to PASSWORD_STRENGTH_MEDIUM.
+            also accepts a strign representing one of the PASSWORD_STRENGTH_*
             You can use on of the PASSWORD_STRENGTH_* constants defined in this module.
             min_strength is a qualitative measurement of the password strength,
             compared to an "optimal" password. See the password_strength() function
@@ -187,14 +195,17 @@ class StrengthPasswordValidator:
 
     def __init__(
         self,
-        min_strength: float = PASSWORD_STRENGTH_MEDIUM,
+        min_strength: float | str = PASSWORD_STRENGTH_MEDIUM,
         min_length: int = 0,
         min_lower: int = 0,
         min_upper: int = 0,
         min_digit: int = 0,
         min_special: int = 0,
     ):
-        self.min_strength: float = min_strength
+        if str(min_strength).isnumeric():
+            self.min_strength: float = float(min_strength)
+        else:
+            self.min_strength: float = float(password_strength_from_symbol(min_strength))
         self.min_length: int = min_length
         self.min_lower: int = min_lower
         self.min_upper: int = min_upper
@@ -226,15 +237,23 @@ class StrengthPasswordValidator:
 
     def get_help_text(self) -> str:
         """Validator help text."""
-        all_requirements = []
-        if strength_requirements := self.strength_requirements_help_text():
-            all_requirements.append(strength_requirements)
-        if char_requirements := self.char_requirements_help_text():
-            all_requirements.append(char_requirements)
-        if len(all_requirements) > 0:
-            return _("Password ") + _("\nand\n").join(all_requirements)
-        else:
-            return ""
+        password_strength_str = _(password_strength_grade(self.min_strength))
+        help_msg = _("Choose a %(password_strength)s password") % {
+            "password_strength": password_strength_str
+        }
+        charlist = []
+        if self.min_digit > 0:
+            charlist.append(_("numeric_chars"))
+        if self.min_lower > 0:
+            charlist.append(_("lowercase_letters"))
+        if self.min_upper > 0:
+            charlist.append(_("uppercase_letters"))
+        if self.min_special > 0:
+            charlist.append(_("special_chars"))
+
+        if len(charlist):
+            help_msg += " " + _("containing") + " " + ", ".join(charlist)
+        return help_msg
 
     def strength_requirements_help_text(self) -> str:
         """Displays help on minimal strength requirements."""
