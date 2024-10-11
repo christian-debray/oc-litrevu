@@ -114,9 +114,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'my_auth.validators.StrengthPasswordValidator',
         "OPTIONS": {
             "min_strength": "PASSWORD_STRENGTH_MEDIUM",
-            "min_digit": 0,
-            "min_lower": 0,
-            "min_upper": 0,
+            "min_digit": 1,
+            "min_lower": 1,
+            "min_upper": 1,
             "min_special": 0
         }
     }

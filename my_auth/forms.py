@@ -28,7 +28,7 @@ class RegisterForm(forms.ModelForm):
     password = forms.CharField(
         required=True,
         widget=forms.PasswordInput(render_value=False),
-        help_text=password_validation.password_validators_help_text_html()
+        help_text="\n".join(password_validation.password_validators_help_texts())
     )
 
     password_confirm = forms.CharField(

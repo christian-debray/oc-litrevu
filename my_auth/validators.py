@@ -3,14 +3,19 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 import math
 
-SPECIAL_CHARS = ",?;.:/!§%*$£@&#()[]{}+-"
+# special chars: !"#$%&\'()*+,-./
+SPECIAL_CHARS = [chr(x) for x in range(ord(' ')+1, ord('0'))]
 # Low entropy = 10 characters including ASCII lower case, upper case, digits
 PASSWORD_ENTROPY_LOW = 60
 PASSWORD_ENTROPY_MEDIUM = 77
 PASSWORD_ENTROPY_HIGH = 144
+#
+# password strength constants are empirical.
+# see notes in the password_strength function
+
 PASSWORD_STRENGTH_LOWEST = 0
 PASSWORD_STRENGTH_LOW = 0.3
-PASSWORD_STRENGTH_MEDIUM = 0.66
+PASSWORD_STRENGTH_MEDIUM = 0.5
 PASSWORD_STRENGTH_HIGH = 0.75
 PASSWORD_STRENGTH_HIGHEST = 0.9
 
@@ -83,12 +88,23 @@ def password_strength_grade(strength: float) -> str:
 
 def password_strength(password: str, stats: dict[str, float] = None) -> float:
     """Calculates the strength of a password as a float comprosed between 0 and 1.
+
     The strength is a function of the password's diversity and it's entropy
     compared to PASSWORD_ENTROPY_HIGH.
+    The entropy of a password rises with its length and the range of character types
+    found in the password.
+
+    The current algo would evaluate:
+    -   `"A1,azer"` as a weak password
+    -   `"A1-azertyuiq"` as a medium strength password
+    -   `"A1,azertyuiqsdfgh"` as a strong password
+    -   `"A1,azertyuiqsdfghjklm"` as very strong password
     """
     stats = stats or password_stats(password)
     entropy = password_entropy(password, stats)
-    return min(1.0, (entropy * stats["diversity"]) / PASSWORD_ENTROPY_HIGH)
+    # allow for some character repetition:
+    diversity_factor = min(1.0, stats["diversity"] / .6)
+    return min(1.0, (entropy * diversity_factor) / PASSWORD_ENTROPY_HIGH)
 
 
 def password_entropy(password: str, stats: dict[str, float] = None) -> int:
@@ -169,6 +185,22 @@ def password_stats(password: str) -> dict[str, float]:
     }
 
 
+def password_example(required_strength: float) -> str:
+    """Generates a random password example meeting a strength requirement.
+    """
+    low_chars = [chr(x) for x in range(ord('a'), ord('z') + 1)]
+    upper_chars = [chr(x) for x in range(ord('A'), ord('Z') + 1)]
+    digits = [chr(x) for x in range(ord('0'), ord('9') + 1)]
+    from itertools import chain
+    import random
+    table = list(chain(low_chars, upper_chars, digits, SPECIAL_CHARS))
+    random.shuffle(table)
+    i = 1
+    while password_strength("".join(table[:i])) < required_strength:
+        i += 1
+    return "".join(table[:i])
+
+
 class StrengthPasswordValidator:
     """Validate a password strength.
     Strength is calculated on a password's 'entropy',
@@ -237,10 +269,9 @@ class StrengthPasswordValidator:
 
     def get_help_text(self) -> str:
         """Validator help text."""
-        password_strength_str = _(password_strength_grade(self.min_strength))
-        help_msg = _("Choose a %(password_strength)s password") % {
-            "password_strength": password_strength_str
-        }
+        help_msg = _("Choose a password strong enough")
+        if length_suggestion := self.length_hint():
+            help_msg += " (" + _("at least %d characters") % length_suggestion + ")"
         charlist = []
         if self.min_digit > 0:
             charlist.append(_("numeric_chars"))
@@ -262,6 +293,14 @@ class StrengthPasswordValidator:
             return _("must have a minimal strength of %s") % (strength_str)
         else:
             return ""
+
+    def length_hint(self) -> int:
+        """Returns an estimate of minimal password length to meet strength or length requirement.
+        """
+        if self.min_strength:
+            return len(password_example(self.min_strength))
+        else:
+            return self.min_length
 
     def char_requirements_help_text(self) -> str:
         """Displays help on minimal character requirements."""
