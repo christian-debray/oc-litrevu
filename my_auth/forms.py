@@ -3,7 +3,6 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext as _
-# from .validators import password_strength_validator
 from app.models import User
 
 

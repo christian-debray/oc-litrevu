@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
-from django.utils.translation import ngettext
 import math
 
 # special chars: !"#$%&\'()*+,-./
@@ -259,12 +258,7 @@ class StrengthPasswordValidator:
                 min_special=self.min_special,
             )
         except ValidationError as e:
-            msg = e.message + "\n" + _("Your password") + " "
-            match (e.code):
-                case "min_char_error":
-                    msg += self.char_requirements_help_text()
-                case "min_strength_error":
-                    msg += self.strength_requirements_help_text()
+            msg = e.message + "\n" + self.get_help_text()
             raise ValidationError(msg, code=e.code)
 
     def get_help_text(self) -> str:
@@ -286,14 +280,6 @@ class StrengthPasswordValidator:
             help_msg += " " + _("containing") + " " + ", ".join(charlist)
         return help_msg
 
-    def strength_requirements_help_text(self) -> str:
-        """Displays help on minimal strength requirements."""
-        if self.min_strength > 0:
-            strength_str = _(password_strength_grade(self.min_strength))
-            return _("must have a minimal strength of %s") % (strength_str)
-        else:
-            return ""
-
     def length_hint(self) -> int:
         """Returns an estimate of minimal password length to meet strength or length requirement.
         """
@@ -301,50 +287,3 @@ class StrengthPasswordValidator:
             return len(password_example(self.min_strength))
         else:
             return self.min_length
-
-    def char_requirements_help_text(self) -> str:
-        """Displays help on minimal character requirements."""
-        char_requirements = []
-        if self.min_length > 0:
-            char_requirements.append(_("at least %d characters") % (self.min_length))
-        if self.min_lower > 0:
-            char_requirements.append(
-                ngettext(
-                    "at least %d lowercase letter",
-                    "at least %d lowercase characters",
-                    self.min_lower,
-                )
-                % (self.min_lower)
-            )
-        if self.min_upper > 0:
-            char_requirements.append(
-                ngettext(
-                    "at least %d uppercase character",
-                    "at least %d uppercase characters",
-                    self.min_upper,
-                )
-                % (self.min_upper)
-            )
-        if self.min_digit > 0:
-            char_requirements.append(
-                ngettext(
-                    "at least %d numeric character",
-                    "at least %d numeric characters",
-                    self.min_digit,
-                )
-                % (self.min_digit)
-            )
-        if self.min_special > 0:
-            char_requirements.append(
-                ngettext(
-                    "at least %d special character",
-                    "at least %d special characters",
-                    self.min_special,
-                )
-                % (self.min_special)
-            )
-
-        if len(char_requirements) > 0:
-            return _("must contain:\n") + ",\n".join(char_requirements)
-        else:
-            return ""
