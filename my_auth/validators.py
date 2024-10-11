@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 import math
 
 SPECIAL_CHARS = ",?;.:/!§%*$£@&#()[]{}+-"
@@ -14,11 +15,11 @@ PASSWORD_STRENGTH_HIGH = 0.75
 PASSWORD_STRENGTH_HIGHEST = 0.9
 
 STRENGTH_MAP = [
-    (PASSWORD_STRENGTH_LOWEST, "LOWEST"),
-    (PASSWORD_STRENGTH_LOW, "LOW"),
-    (PASSWORD_STRENGTH_MEDIUM, "MEDIUM"),
-    (PASSWORD_STRENGTH_HIGH, "HIGH"),
-    (PASSWORD_STRENGTH_HIGHEST, "HIGHEST"),
+    (PASSWORD_STRENGTH_LOWEST, _("lowest_password_strength")),
+    (PASSWORD_STRENGTH_LOW, _("low_password_strength")),
+    (PASSWORD_STRENGTH_MEDIUM, _("medium_password_strength")),
+    (PASSWORD_STRENGTH_HIGH, _("high_password_strength")),
+    (PASSWORD_STRENGTH_HIGHEST, _("highest_password_strength")),
 ]
 
 
@@ -37,9 +38,9 @@ def password_strength_validation(
     """
     if len(password) < min_length:
         raise ValidationError(
-            _("Password should contain at least %(value) characters"),
+            _("Password should contain at least %(value)d characters"),
             params={"value": min_length},
-            code="min_length_error"
+            code="min_length_error",
         )
     stats = password_stats(password)
     if (
@@ -49,11 +50,14 @@ def password_strength_validation(
         or stats.get("special", 0) < min_special
     ):
         raise ValidationError(
-            _("Password does not meet the minimal character requirements."), code="min_char_error"
+            _("Password does not meet the minimal character requirements."),
+            code="min_char_error",
         )
     strength = password_strength(password, stats)
     if strength < min_strength:
-        raise ValidationError(_("This password is too weak."), code="min_strength_error")
+        raise ValidationError(
+            _("This password is too weak."), code="min_strength_error"
+        )
 
 
 def password_strength_grade(strength: float) -> str:
@@ -213,7 +217,7 @@ class StrengthPasswordValidator:
             )
         except ValidationError as e:
             msg = e.message + "\n" + _("Your password") + " "
-            match(e.code):
+            match (e.code):
                 case "min_char_error":
                     msg += self.char_requirements_help_text()
                 case "min_strength_error":
@@ -247,19 +251,39 @@ class StrengthPasswordValidator:
             char_requirements.append(_("at least %d characters") % (self.min_length))
         if self.min_lower > 0:
             char_requirements.append(
-                _("at least %d lowercase characters") % (self.min_lower)
+                ngettext(
+                    "at least %d lowercase letter",
+                    "at least %d lowercase characters",
+                    self.min_lower,
+                )
+                % (self.min_lower)
             )
         if self.min_upper > 0:
             char_requirements.append(
-                _("at least %d uppercase characters") % (self.min_upper)
+                ngettext(
+                    "at least %d uppercase character",
+                    "at least %d uppercase characters",
+                    self.min_upper,
+                )
+                % (self.min_upper)
             )
         if self.min_digit > 0:
             char_requirements.append(
-                _("at least %d numeric characters") % (self.min_digit)
+                ngettext(
+                    "at least %d numeric character",
+                    "at least %d numeric characters",
+                    self.min_digit,
+                )
+                % (self.min_digit)
             )
         if self.min_special > 0:
             char_requirements.append(
-                _("at least %d special characters") % (self.min_special)
+                ngettext(
+                    "at least %d special character",
+                    "at least %d special characters",
+                    self.min_special,
+                )
+                % (self.min_special)
             )
 
         if len(char_requirements) > 0:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-11 07:45+0000\n"
+"POT-Creation-Date: 2024-10-11 09:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
 #: forms.py:39
 msgid "Missing or invalid password"
 msgstr "Mot de passe manquant ou invalide."
@@ -29,28 +30,48 @@ msgstr "Nom d'utilisateur manquant ou invalide."
 msgid "Password and password confirmation must match."
 msgstr "Le mot de passe n'a pas été correctement confirmé."
 
-#: validators.py:40
-#, python-format
-msgid "Password should contain at least %(value) characters"
-msgstr "Le mot de passe doit comporter au moins %(value) caractères."
+#: validators.py:18
+msgid "lowest_password_strength"
+msgstr "très faible"
 
-#: validators.py:52
+#: validators.py:19
+msgid "low_password_strength"
+msgstr "faible"
+
+#: validators.py:20
+msgid "medium_password_strength"
+msgstr "moyen"
+
+#: validators.py:21
+msgid "high_password_strength"
+msgstr "fort"
+
+#: validators.py:22
+msgid "highest_password_strength"
+msgstr "très fort"
+
+#: validators.py:41
+#, python-format
+msgid "Password should contain at least %(value)d characters"
+msgstr "Le mot de passe doit comporter au moins %(value)d caractères."
+
+#: validators.py:53
 msgid "Password does not meet the minimal character requirements."
 msgstr "Le mot de passe ne comporte pas les caractères requis."
 
-#: validators.py:56
+#: validators.py:59
 msgid "This password is too weak."
 msgstr "Ce mot de passe est trop faible."
 
-#: validators.py:215
+#: validators.py:219
 msgid "Your password"
 msgstr "Votre mot de passe"
 
-#: validators.py:231
+#: validators.py:235
 msgid "Password "
 msgstr "Mot de passe"
 
-#: validators.py:231
+#: validators.py:235
 msgid ""
 "\n"
 "and\n"
@@ -58,37 +79,45 @@ msgstr ""
 "\n"
 "et\n"
 
-#: validators.py:239
+#: validators.py:243
 #, python-format
 msgid "must have a minimal strength of %s"
 msgstr "doit être au moins %s"
 
-#: validators.py:247
+#: validators.py:251
 #, python-format
 msgid "at least %d characters"
 msgstr "au moins %d caractères"
 
-#: validators.py:250
+#: validators.py:255
 #, python-format
-msgid "at least %d lowercase characters"
-msgstr "au moins %d lettre(s) minuscule(s)"
+msgid "at least %d lowercase letter"
+msgid_plural "at least %d lowercase characters"
+msgstr[0] "au moins %d lettre minuscule"
+msgstr[1] "au moins %d lettres minuscules"
 
-#: validators.py:254
+#: validators.py:264
 #, python-format
-msgid "at least %d uppercase characters"
-msgstr "au moins %d lettre(s) majuscule(s)"
+msgid "at least %d uppercase character"
+msgid_plural "at least %d uppercase characters"
+msgstr[0] "au moins %d lettre majuscule"
+msgstr[1] "au moins %d lettres majuscules"
 
-#: validators.py:258
+#: validators.py:273
 #, python-format
-msgid "at least %d numeric characters"
-msgstr "au moins %d chiffre(s)"
+msgid "at least %d numeric character"
+msgid_plural "at least %d numeric characters"
+msgstr[0] "au moins %d chiffre"
+msgstr[1] "au moins %d chiffres"
 
-#: validators.py:262
+#: validators.py:282
 #, python-format
-msgid "at least %d special characters"
-msgstr "au moins %d caractères spéciaux"
+msgid "at least %d special character"
+msgid_plural "at least %d special characters"
+msgstr[0] "au moins %d caractère spécial"
+msgstr[1] "au moins %d caractères spéciaux"
 
-#: validators.py:266
+#: validators.py:290
 msgid "must contain:\n"
 msgstr "doit comporter :\n"
 
