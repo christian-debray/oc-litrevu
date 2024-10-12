@@ -28,6 +28,25 @@ install the required packages
 
     pip install -r requirements.txt
 
+
+## Install the database
+
+    python manage.py makemigrations app
+    python manage.py migrate
+
+You can create a superuser account as well if you wish:
+    python manage.py createsuperuser
+
+## Load initial data from fixtures:
+
+load from YAML file (requires PyYAML):
+
+    python manage.py loaddata --app initial.yaml
+
+or load from JSON (JSON format is always available but less human-readable)
+    
+    python manage.py loaddata --app app initial.json
+
 ## Run the app locally
 
 Start django's local server from a terminal:
