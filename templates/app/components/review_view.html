@@ -9,7 +9,7 @@
     {% else %}
         <p>Vous avez posté une critique</p>
     {% endif %}
-    <p><strong>{{review.headline}}</strong> - {{review.rating}}/5</p>
+    <p><strong>{{review.headline}}</strong> - <rating-widget data-rating="{{review.rating}}" data-max-rating="5">{{review.rating}}/5</rating-widget></p>
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>

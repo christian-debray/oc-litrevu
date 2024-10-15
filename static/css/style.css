@@ -6,3 +6,11 @@
     font-size: small;
     padding: 1pt;
 }
+
+rating-widget {
+    font-size: 15pt;
+    --full-star-fill-color: #ecb211;
+    --full-star-stroke-color: #9b6426;
+    --empty-star-fill-color: #e0e0e0;
+    --empty-star-stroke-color: #666;
+}

@@ -1,8 +1,16 @@
 <div class="flex-row">
     {% if post_entry.edit_url %}
-        <a class="btn btn-primary" href="{{post_entry.edit_url}}">Modifier</a>
+        <form method="POST" action="{{post_entry.edit_url}}">
+            {% csrf_token %}
+            <input type="hidden" name="entry_id" value="{{post_entry.pk}}">
+            <button class="btn btn-secondary" name="action" value="edit">Modifier</button>
+        </form>
     {% endif %}
     {% if post_entry.delete_url %}
-        <a class="btn btn-secondary" href="{{post_entry.delete_url}}">Supprimer</a>
+        <form method="POST" action="{{post_entry.delete_url}}">
+            {% csrf_token %}
+            <input type="hidden" name="entry_id" value="{{post_entry.pk}}">
+            <button class="btn btn-secondary" name="action" value="delete">Supprimer</button>
+        </form>
     {% endif %}
 </div>

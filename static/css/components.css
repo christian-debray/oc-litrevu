@@ -1,0 +1,55 @@
+/*
+ * Customize the styles of the rating-widget.
+ */
+@property --full-star-fill-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: black;
+}
+@property --full-star-stroke-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: black;
+}
+@property --empty-star-fill-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: white;
+}
+@property --empty-star-stroke-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: darkgrey;
+}
+
+:root {
+    display: inline-block;
+    padding: 1pt;
+    font-size: inherit
+}
+
+:root .no-rating {
+    background-color: grey;
+    display: inline-block;
+}
+
+star-widget {
+    display: inline-block;
+    fill: none;
+    stroke: black;
+    width: 1cap;
+    height: 1cap;
+    padding: 1px;
+    margin: 0;
+}
+
+.star-full {
+    fill: var(--full-star-fill-color);
+    stroke: var(--full-star-stroke-color);
+}
+
+.star-empty {
+    fill: var(--empty-star-fill-color);
+    stroke: var(--empty-star-stroke-color);
+}
+
