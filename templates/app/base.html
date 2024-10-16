@@ -6,8 +6,12 @@
     {% load static %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    <script id="component-loader"
+        src="{% static 'javascript/components.js' %}"
+        data-stylesheet-url="{% static 'css/components.css' %}"
+        data-templates-url="{% static 'html/components.html' %}"></script>
     <link rel="stylesheet" href="{%static 'css/style.css'%}">
-    <script src="{% static 'javascript/components.js' %}" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>

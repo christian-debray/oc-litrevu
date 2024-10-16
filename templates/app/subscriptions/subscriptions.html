@@ -16,14 +16,14 @@
     <h2>Abonnements</h2>
     <ul>
     {% for u in following %}
-        <li>{{u.display_name}} {{u}} <a href="{% url 'cancel_subscription' u.pk %}">désabonner</a></li>
+        <li>{{u.display_name}} <a href="{% url 'cancel_subscription' u.pk %}">désabonner</a></li>
     {% endfor %}
     </ul>
 <div>
     <h2>Abonnés</h2>
     <ul>
         {% for u in followers %}
-            <li>{{u.display_name}} {{u}}</li>
+            <li>{{u.display_name}}</li>
         {% endfor %}
     </ul>
 </div>

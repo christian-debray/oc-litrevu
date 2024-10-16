@@ -33,7 +33,11 @@
     display: inline-block;
 }
 
-star-widget {
+rating-widget * {
+    width: 1cap;
+}
+
+star-symbol {
     display: inline-block;
     fill: none;
     stroke: black;
@@ -41,6 +45,7 @@ star-widget {
     height: 1cap;
     padding: 1px;
     margin: 0;
+    vertical-align: baseline;
 }
 
 .star-full {
