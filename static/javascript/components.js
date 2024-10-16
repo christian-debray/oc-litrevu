@@ -43,7 +43,10 @@
             const maxRating = this.getAttribute("data-max-rating") || RatingWidget.defaults.max_rating;
             const ratingTxt = rating != null ? rating + "/" + maxRating : RatingWidget.defaults.coalesce_undefined;
             const labelTxt = this.getAttribute("aria-label") || RatingWidget.defaults.alt_text + ": " + ratingTxt;
-
+            
+            shadow.host.setAttribute("role", "img");
+            shadow.host.setAttribute("aria-label", labelTxt);
+            shadow.host.setAttribute("title", labelTxt);
             if (RatingWidget.stylesheetURL) {
                 const linkElem = document.createElement("link");
                 linkElem.setAttribute("rel", "stylesheet");
@@ -53,16 +56,7 @@
 
             const wrapper = document.createElement("span");
             wrapper.setAttribute("class", "wrapper");
-            wrapper.setAttribute("role", "image");
-            wrapper.setAttribute("aria-label", labelTxt);
-            wrapper.setAttribute("title", labelTxt)
             shadow.appendChild(wrapper);
-
-
-
-            // if (RatingWidget.externalStylesheet) {
-            //     shadow.adoptedStyleSheets = [RatingWidget.externalStylesheet];
-            // }
 
             if (rating != null) {
                 for (let i = 1; i <= maxRating; i++) {
