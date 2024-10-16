@@ -25,7 +25,7 @@
 :root {
     display: inline-block;
     padding: 1pt;
-    font-size: inherit
+    font-size: inherit;
 }
 
 :root .no-rating {
@@ -33,14 +33,9 @@
     display: inline-block;
 }
 
-rating-widget * {
-    width: 1cap;
-}
-
-star-symbol {
+.star-icon,
+star-icon {
     display: inline-block;
-    fill: none;
-    stroke: black;
     width: 1cap;
     height: 1cap;
     padding: 1px;
