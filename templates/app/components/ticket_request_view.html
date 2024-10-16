@@ -1,15 +1,17 @@
 {% autoescape on %}
-<div class="container border mb-3">
-    {% include "app/components/time_published.html" with time_published=ticket.time_created %}
+<article class="container border mb-3" aria-label="Ticket">
     {% if debug %}
-        <span class="debug">(ticket {{ticket.id}} by {{ticket.user_id}})</span>
+    <span class="debug">(ticket {{ticket.id}} by {{ticket.user_id}})</span>
     {% endif %}
-    {% if ticket.user_id != request.user.id %}
-        <p>{{ticket.user.display_name}} a demandé une critique</p>
-    {% else %}
-        <p>Vous avez demandé une critique</p>
-    {% endif %}
-    <p><strong>{{ticket.title}}</strong></p>
+    <section aria-label="author-date">
+        <time>{{review.time_created}}</time>
+        {% if review.user_id != request.user.id %}
+            <p>{{review.user.display_name}} a demandé une critique</p>
+        {% else %}
+            <p>Vous avez demandé une critique</p>
+        {% endif %}
+    </section>
+    <h3><strong>{{ticket.title}}</strong></h3>
     {% if ticket.description %}
         <p>{{ticket.description}}</p>
     {% endif %}
@@ -27,5 +29,5 @@
     {% if display_commands %}
         {% include "app/components/post_entry_commands.html" with post_entry=ticket %}
     {% endif %}
-</div>
+    </article>
 {% endautoescape %}

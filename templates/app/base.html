@@ -7,7 +7,7 @@
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     <link rel="stylesheet" href="{%static 'css/style.css'%}">
-    <script src="{% static 'javascript/component.js' %}" defer></script>
+    <script src="{% static 'javascript/components.js' %}" defer></script>
 </head>
 
 <body>
@@ -20,10 +20,9 @@
             {% endfor %}
         </ul>
         {% endif %}
-        {% block content %}{% endblock %}
+        <main>
+            {% block content %}{% endblock %}
+        </main>
     </div>
-    <footer class="container-sm text-center border-top mt-5">
-        <p>This is the footer of the base template.</p>
-    </footer>
 </body>
 </html>

@@ -1,15 +1,17 @@
 {% autoescape on %}
-<div class="container border mb-3">
+<article class="container border mb-3" aria-label="Critique">
     {% if debug %}
-        <span class="debug">(review {{review.id}} by {{review.user_id}})</span>
+        <span class="debug" aria-hidden="true">(review {{review.id}} by {{review.user_id}})</span>
     {% endif %}
-    {% include "app/components/time_published.html" with time_published=review.time_created %}
-    {% if review.user_id != request.user.id %}
-        <p>{{review.user.display_name}} a posté une critique</p>
-    {% else %}
-        <p>Vous avez posté une critique</p>
-    {% endif %}
-    <p><strong>{{review.headline}}</strong> - <rating-widget data-rating="{{review.rating}}" data-max-rating="5">{{review.rating}}/5</rating-widget></p>
+    <section aria-label="author-date">
+        <time>{{review.time_created}}</time>
+        {% if review.user_id != request.user.id %}
+            <p>{{review.user.display_name}} a posté une critique</p>
+        {% else %}
+            <p>Vous avez posté une critique</p>
+        {% endif %}
+    </section>
+    <h3><strong>{{review.headline}}</strong> - <rating-widget aria-label="note : {{review.rating}} sur 5" data-rating="{{review.rating}}" data-max-rating="5">{{review.rating}}/5</rating-widget></h3>
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>
@@ -17,5 +19,5 @@
     {% if display_commands %}
         {% include "app/components/post_entry_commands.html" with post_entry=review %}
     {% endif %}
-</div>
+</article>
 {% endautoescape %}

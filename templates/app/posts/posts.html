@@ -1,8 +1,8 @@
 {% extends "app/base.html" %}
-{% block title%}User {{ username }}'s Posts{% endblock %}
+{% block title%}LITRevu - Vos posts{% endblock %}
 {% block content %}
 <h1>Vos posts</h1>
-<div>
+<section aria-label="flux">
     {% for entry in posts %}
         {% if entry.content_type == "REVIEW" %}
             {% include "app/components/review_view.html" with review=entry %}

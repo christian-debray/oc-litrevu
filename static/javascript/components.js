@@ -9,7 +9,7 @@ class StarWidget extends HTMLElement {
     }
 
     templateHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 34.4">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 34.4" aria-hidden="true">
         <path d="M28.39,33.12,17.67,27,6.93,33.12,10,20.94l-7.77-8.1H12.85L17.67,2.55l4.83,10.28H33.1l-7.78,8.1Z"
             transform="translate(-0.18 -0.47)"></path>
     </svg>
@@ -55,15 +55,18 @@ class RatingWidget extends HTMLElement {
 
     connectedCallback() {
         const shadow = this.attachShadow({mode: "open"});
-        const starSymbol = this.getAttribute("data-symbol") || this.defaults.default_star_symbol;
         const rating = this.getAttribute("data-rating");
         const maxRating = this.getAttribute("data-max-rating") || this.defaults.max_rating;
         const ratingTxt = rating != null ? rating + "/" + maxRating: this.defaults.default_coalesce_undefined;
-        const altText = this.getAttribute("data-alt") || this.defaults.default_alt_text + ": " + ratingTxt;
+        const labelTxt = this.getAttribute("aria-label") || this.defaults.default_alt_text + ": " + ratingTxt;
         
         const wrapper = document.createElement("span");
         wrapper.setAttribute("class", "wrapper");
-        wrapper.setAttribute("title", altText);
+        wrapper.setAttribute("aria-valuenow", rating);
+        wrapper.setAttribute("aria-valuemin", 0);
+        wrapper.setAttribute("aria-valuemax", maxRating);
+        wrapper.setAttribute("aria-label", labelTxt);
+        wrapper.setAttribute("title", labelTxt)
         shadow.appendChild(wrapper);
 
         if (rating != null) {
