@@ -116,31 +116,11 @@
     }
 
     /**
-     * Load a stylesheet
-     * @param {*} url 
-     * @returns CSSStylesheet
-     */
-    async function loadCSS(url) {
-        const res = await fetch(url);
-        const cssRules = await res.text();
-        const css = new CSSStyleSheet();
-        await css.replace(cssRules)
-        return css
-    }
-
-    /**
      * Intiialize the components: load the stylesheet, and define custom elements.
      */
     function initComponents() {
         const loader = document.querySelector('script#component-loader');
-        const componentStylesheet = loader.dataset.stylesheetUrl;
-        if (componentStylesheet) {
-            RatingWidget.stylesheetURL = componentStylesheet;
-            // pre-load the stylesheet
-            loadCSS(componentStylesheet).then((x) => {
-                RatingWidget.externalStylesheet = x;
-            });
-        }
+        RatingWidget.stylesheetURL = loader.dataset.stylesheetUrl;
         customElements.define("star-icon", StarIcon);
         customElements.define("rating-widget", RatingWidget);
     }
