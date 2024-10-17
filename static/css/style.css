@@ -536,13 +536,15 @@ rating-widget {
         flex-wrap: wrap;
     }
 
-    .field .input-box label {
+    .field .input-box label,
+    .field .input-box .label {
         flex-shrink: 0;
         flex-grow: 0;
         flex-basis: fit-content;
     }
 
-    .field .input-box input {
+    .field .input-box input,
+    .field .input-box .input {
         flex-shrink: 1;
         flex-grow: 1;
         flex-basis: fit-content;

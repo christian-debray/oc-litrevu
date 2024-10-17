@@ -6,17 +6,21 @@
 <div>
     <form action="{%url "add_subscription" %}" method="POST">
         {% csrf_token %}
-        <label for="{{ subscribe_form.follow_username.id_for_label }}">Nom d'utilisateur</label>
-        {{ subscribe_form.follow_username }}
-        <button type="submit" name="action" value="validate_subscription">Envoyer</button>
-        {{ subscribe_form.follow_username.errors }}
+        <div class="field box-medium">
+            {{ subscribe_form.follow_username.errors }}
+            <p class="input-box">
+                <label for="{{ subscribe_form.follow_username.id_for_label }}">Nom d'utilisateur :</label>
+                {{ subscribe_form.follow_username }}
+                <button type="submit" name="action" value="validate_subscription">Envoyer</button>
+            </p>
+        </div>
     </form>
 </div>
 <div>
     <h2>Abonnements</h2>
     <ul>
     {% for u in following %}
-        <li>{{u.display_name}} <a href="{% url 'cancel_subscription' u.pk %}">désabonner</a></li>
+        <li >{{u.display_name}} <a href="{% url 'cancel_subscription' u.pk %}">désabonner</a></li>
     {% endfor %}
     </ul>
 <div>
