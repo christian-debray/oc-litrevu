@@ -223,7 +223,7 @@ class PostEntry:
 
     def __init__(self, model_instance: AbstractPostEntry, user: User):
         self.instance: AbstractPostEntry = model_instance
-        self.user = user
+        self._visiting_user = user
         self._edit_url = None
         self._delete_url = None
         logger.debug(f"Create PostEntry on top of {model_instance.content_type} {model_instance}:")
@@ -297,7 +297,7 @@ class PostEntry:
     @property
     def is_author(self) -> bool:
         """True if the current user is the author of this entry."""
-        return self.instance.author_id == self.user.pk
+        return self.instance.author_id == self._visiting_user.pk
 
     @property
     def commands(self) -> list[dict]:

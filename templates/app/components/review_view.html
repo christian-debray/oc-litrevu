@@ -5,10 +5,10 @@
     {% endif %}
     <section class="author-date" aria-label="author-date">
         <time>{{review.time_created}}</time>
-        {% if review.user_id != request.user.id %}
-            <p>{{review.user.display_name}} a posté une critique</p>
-        {% else %}
+        {% if review.is_author %}
             <p>Vous avez posté une critique</p>
+        {% else %}
+            <p>{{review.author_name}} a posté une critique</p>
         {% endif %}
     </section>
     <h3><strong>{{review.headline}}</strong> - <rating-widget aria-label="note : {{review.rating}} sur 5" data-rating="{{review.rating}}" data-max-rating="5">{{review.rating}}/5</rating-widget></h3>

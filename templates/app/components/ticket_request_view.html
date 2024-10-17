@@ -8,10 +8,10 @@
             <p>Ticket - {{ ticket.user.display_name }}</p>
         {% else %}
             <time>{{ticket.time_created}}</time>
-            {% if ticket.user_id != request.user.id %}
-                <p>{{ticket.user.display_name}} a demandé une critique</p>
-            {% else %}
+            {% if ticket.is_author %}
                 <p>Vous avez demandé une critique</p>
+            {% else %}
+                <p>{{ticket.user.display_name}} a demandé une critique</p>
             {% endif %}
         {% endif %}
     </section>
