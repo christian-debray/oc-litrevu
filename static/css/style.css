@@ -76,18 +76,20 @@ summary,
 :root {
     /* colors */
     --color_text--default: #18181b;
-    --color_text--subtle: #71717a;
-    --color_text--link: #6366f1;
-    --color_text--link-alt: #4f46e5;
+    --color_text--subtle: #54545b;
+    --color_text--link: #1d739b;
+    --color_text--link-alt: #036592;
+    --color_text--light: #f0f0f0;
     --color_text--accent: var(--color_text--link);
     --color_background--surface: white;
     --color_background--element: #f4f4f5;
     --color_background--chip: #e4e4e7;
     --color_theme--dark: #490434;
-    --color_border-light: #bf97b3;
-    --color_border-light-alt: #cccccc;
-    --color_theme--light: #f0f0f0;
+    --color_theme--light: #bf97b3;
     --color_theme--light-alt: #c0c0c0;
+    --color_border-dark: var(--color_theme--dark);
+    --color_border-light: var(--color_theme--light);
+    --color_border-light-alt: #cccccc;
     --color_accent: var(--color_text--link);
 
     /* fonts */
@@ -182,6 +184,15 @@ small,
     line-height: var(--font_height--small);
 }
 
+a:not([class]) {
+    color: var(--color_text--link);
+}
+
+a:not([class]):hover,
+a:not([class]):focus {
+    color: var(--color_text--link-alt);
+}
+
 a:not([class]):hover,
 a:not([class]):focus {
     text-decoration: underline;
@@ -251,6 +262,7 @@ input[type="button"] {
   border: 2px solid var(--color_text--link);
   padding-inline: .3rem;
   padding-block: .3rem;
+  border-radius: .5rem;
 }
 
 a.button:hover,
@@ -318,11 +330,11 @@ rating-widget {
         flex-wrap: wrap;
         justify-content: center;
         background-color: var(--color_theme--dark);
-        color: var(--color_theme--light);
+        color: var(--color_text--light);
     }
 
     header a {
-        color: var(--color_theme--light);
+        color: var(--color_text--light);
     }
 
     header .brand {
@@ -330,7 +342,7 @@ rating-widget {
         text-align: center;
         font-size: var(--font_size--xlarge);
         margin: 0 0 .5rem 0;
-        color: var(--color_theme--light)
+        color: var(--color_text--light)
     }
     
     header nav .nav {
@@ -350,7 +362,8 @@ rating-widget {
     }
 
     .nav-item a:hover {
-        color: var(--color_accent);
+        color: var(--color_background--surface);
+        text-decoration: underline;
     }
 
     main {
@@ -361,23 +374,47 @@ rating-widget {
         padding: 1rem;
     }
     
-    .feed > article.post {
-        border: solid 1px var(--color_border-light);
-        border-top: solid 4px var(--color_theme--dark);
-        position: relative;
+    /**************** colors fun ******************/
+
+    .container#outer {
+    }
+    
+    main:has(.feed) {
+        background-color: var(--color_theme--light);
+        background-image: linear-gradient(0deg,var(--color_theme--dark) 0%, white 90%);
+        background-attachment: fixed;
     }
 
-    .feed > article.post:before {
+    main article.post {
+        background-color: var(--color_background--element);
+    }
+    
+    main article.post article.post {
+        background-color: var(--color_background--chip);
+    }
+    
+    .feed > article.post {
+        border-right: solid 1px var(--color_border-light);
+        border-left: solid 1px var(--color_border-light);
+        border-bottom: solid 4px var(--color_theme--dark);
+        border-top: solid 12px var(--color_border-light);
+        border-top-right-radius: 5px;
+        border-top-left-radius: 5px;
+        position: relative;
+        margin-top: 1rem
+    }
+
+    .feed > article.review:before {
         content: "";
         display: block;
         position: absolute;
         z-index: 10;
-        bottom: 0;
-        left: 0;
+        bottom: -1px;
+        left: -1px;
         width: 0;
         height: 0;
-        border-bottom: 3rem solid var(--color_border-light);
-        border-right: 3rem solid transparent;
+        border-bottom: 4rem solid var(--color_border-dark);
+        border-right: 4rem solid transparent;
     }
 
     article.post > article.post {
@@ -426,6 +463,7 @@ rating-widget {
         gap: 1rem;
         margin-top: 1rem
     }
+
 }
 
 /* ************ Smartphone **************** */
