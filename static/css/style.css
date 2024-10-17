@@ -423,6 +423,19 @@ rating-widget {
     }
 
     /**************** colors and decoration ******************/
+    .card {
+        background-color: var(--color_background--element);
+        border: solid 1px var(--color_border-light);
+        border-radius: 1rem;
+        padding: 1rem;
+    }
+
+    .card-secondary {
+        background-color: var(--color_background--chip);
+        border: solid 1px var(--color_border-light-alt);
+        border-radius: 1rem;
+        padding: 1rem;
+    }
 
     main:has(.feed) {
         background-color: var(--color_theme--light);
@@ -464,7 +477,7 @@ rating-widget {
 
     article.post>article.post {
         border: solid 1px var(--color_border-light-alt);
-        border-radius: 10px;
+        border-radius: 1rem;
         background-color: var(--color_background--element);
         color: var(--color_theme--dark)
     }
