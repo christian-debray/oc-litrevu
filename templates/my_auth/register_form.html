@@ -1,13 +1,8 @@
 <form action="{% url "register" %}" method="POST">
     {% csrf_token %}
-    {% if register_form.errors %}
-        <ul class="errorlist">
-        {% for err in register_form.errors %}
-            <li><strong>{{ err|escape }}</strong></li>
-        {% endfor %}
-        </ul>
-    {% endif %}
+    {{register_form.non_field_errors}}
     <div class="field">
+        {{register_form.username.errors}}
         <p class="input-box">
             <label id="id_username_helptext" for="id_username">Nom d'utilisateur : <span aria-label="required">*</span></label>
             {{register_form.username}}
@@ -17,6 +12,7 @@
         {% endif %}
     </div>
     <div class="field">
+        {{register_form.password.errors}}
         <p class="input-box">
             <label for="{{register_form.password.auto_id}}">Mot de passe : <span aria-label="required">*</span></label>
             {{register_form.password}}

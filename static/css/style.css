@@ -81,6 +81,7 @@ summary,
     --color_text--link-alt: #036592;
     --color_text--light: #f0f0f0;
     --color_text--accent: var(--color_text--link);
+    --color_text--error: #a20f00;
     --color_background--surface: white;
     --color_background--element: #f4f4f5;
     --color_background--chip: #e4e4e7;
@@ -484,6 +485,17 @@ rating-widget {
 
     /* ================== SECTION: FORM ELEMENTS ==================== */
 
+    form .errorlist {
+        color: var(--color_text--error);
+        font-style: italic;
+        margin-bottom: 0;
+        font-weight: bold;
+    }
+
+    form .errorlist li {
+        list-style-type: none;
+    }
+
     .field .input-box {
         margin-bottom: .5rem
     }
@@ -571,6 +583,7 @@ rating-widget {
 
     .box-small {
         max-width: 40rem;
+        margin-inline: auto;
     }
 }
 
