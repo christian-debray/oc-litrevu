@@ -24,10 +24,7 @@
             <img alt="{{ticket.title}}" class="img-fluid" src="{{ ticket.image.url }}">
         </div>
     {% endif %}
-    {% if display_review_btn and ticket.total_reviews == 0 %}
-        <a class="button" href="{% url "review_for_ticket" ticket_id=ticket.pk %}">Créer une critique</a>
-    {% endif %}
-    {% if display_commands %}
+    {% if ticket.commands %}
         {% include "app/components/post_entry_commands.html" with post_entry=ticket %}
     {% endif %}
     </article>

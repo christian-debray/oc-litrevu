@@ -15,8 +15,8 @@
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>
-    {% include "app/components/ticket_request_view.html" with ticket=review.ticket nested=1 display_commands=False %}
-    {% if display_commands %}
+    {% include "app/components/ticket_request_view.html" with ticket=review.ticket nested=1 %}
+    {% if review.commands %}
         {% include "app/components/post_entry_commands.html" with post_entry=review %}
     {% endif %}
 </article>

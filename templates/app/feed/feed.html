@@ -8,9 +8,9 @@
 <section aria-label="flux" class="feed">
     {% for entry in feed_entries %}
         {% if entry.content_type == "REVIEW" %}
-            {% include "app/components/review_view.html" with review=entry display_commands=False%}
+            {% include "app/components/review_view.html" with review=entry %}
         {% elif  entry.content_type == "TICKET" %}
-            {% include "app/components/ticket_request_view.html" with ticket=entry display_review_btn=True display_commands=False %}
+            {% include "app/components/ticket_request_view.html" with ticket=entry display_review_btn=True %}
         {% endif %}
     {% endfor %}
 </section>

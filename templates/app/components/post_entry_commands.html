@@ -1,16 +1,15 @@
-<div class="flex-row">
-    {% if post_entry.edit_url %}
-        <form method="POST" action="{{post_entry.edit_url}}">
-            {% csrf_token %}
-            <input type="hidden" name="entry_id" value="{{post_entry.pk}}">
-            <button class="btn btn-secondary" name="action" value="edit">Modifier</button>
-        </form>
-    {% endif %}
-    {% if post_entry.delete_url %}
-        <form method="POST" action="{{post_entry.delete_url}}">
-            {% csrf_token %}
-            <input type="hidden" name="entry_id" value="{{post_entry.pk}}">
-            <button class="btn btn-secondary" name="action" value="delete">Supprimer</button>
-        </form>
-    {% endif %}
-</div>
+<section class="commands">
+    {% for cmd in post_entry.commands %}
+        {% if cmd.cmd_name == "edit" %}
+            <a href="{{cmd.url}}" class="button">Modifier</a>
+        {% elif cmd.cmd_name == "delete" %}
+            <form method="POST" action="{{cmd.url}}">
+                {% csrf_token %}
+                <input type="hidden" name="entry_id" value="{{post_entry.pk}}">
+                <button class="button" name="action" value="delete">Supprimer</button>
+            </form>
+        {% elif cmd.cmd_name == "review" %}
+            <a href="{{cmd.url}}" class="button">Créer une critique</a>
+        {% endif %}
+    {% endfor %}
+</section>

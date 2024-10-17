@@ -357,14 +357,34 @@ rating-widget {
         padding: 1rem;
     }
 
-    article.post,
-    .feed article {
-        border: solid 1px var(--color_border-light);
+    article.post {
         padding: 1rem;
+    }
+    
+    .feed > article.post {
+        border: solid 1px var(--color_border-light);
+        border-top: solid 4px var(--color_theme--dark);
+        position: relative;
+    }
+
+    .feed > article.post:before {
+        content: "";
+        display: block;
+        position: absolute;
+        z-index: 10;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        border-bottom: 3rem solid var(--color_border-light);
+        border-right: 3rem solid transparent;
     }
 
     article.post > article.post {
         border: solid 1px var(--color_border-light-alt);
+        border-radius: 10px;
+        background-color: var(--color_background--element);
+        color: var(--color_theme--dark)
     }
 
     .feed > article {
@@ -400,6 +420,12 @@ rating-widget {
         font-size: var(--font_size--small)
     }
 
+    .post .commands {
+        display: flex;
+        justify-content: end;
+        gap: 1rem;
+        margin-top: 1rem
+    }
 }
 
 /* ************ Smartphone **************** */

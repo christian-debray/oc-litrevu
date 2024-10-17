@@ -1,3 +1,4 @@
+from typing import Any
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db import models
@@ -5,6 +6,9 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from abc import abstractmethod
 from django.utils.translation import gettext as _
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 class User(AbstractUser):
@@ -16,6 +20,7 @@ class User(AbstractUser):
     - *display_name*: Record the user name as it got entered during registration.
                 Used for display only. *User.username* will store the lowercase version of the *display_name*.
     """
+
     display_name = models.CharField(
         max_length=150,
         null=False,
@@ -72,18 +77,15 @@ class UserManager(models.Manager):
     """
 
     def own(self, user: User):
-        """Filter: Instances posted by user.
-        """
+        """Filter: Instances posted by user."""
         return self.get_queryset().filter(user=user)
 
     def followed(self, user: User):
-        """Filter: Instances followed by user.
-        """
+        """Filter: Instances followed by user."""
         return self.get_queryset().filter(user__followed_by__user_id=user.pk)
 
     def own_or_followed(self, user: User):
-        """Filter: Union of followed_by_user and from_user filters.
-        """
+        """Filter: Union of followed_by_user and from_user filters."""
         return self.own(user) | self.followed(user)
 
 
@@ -95,6 +97,7 @@ class TicketUserManager(UserManager):
 
     Provides filters on ticket ownership, relation between a user and ticket author, etc...
     """
+
     def get_queryset(self):
         return (
             super()
@@ -106,11 +109,12 @@ class TicketUserManager(UserManager):
 
 
 class ReviewUserManager(UserManager):
-    """A User-aware manager to query the Review model.
-    """
+    """A User-aware manager to query the Review model."""
+
     def get_queryset(self) -> models.QuerySet:
         return (
-            super().get_queryset()
+            super()
+            .get_queryset()
             .select_related("user")
             .select_related("ticket")
             .select_related("ticket__user")
@@ -129,6 +133,11 @@ class Ticket(AbstractPostEntry):
         null=True, blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
     )
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._total_reviews: int = 0
+
+    @property
     def content_type(self) -> str:
         return "TICKET"
 
@@ -139,6 +148,21 @@ class Ticket(AbstractPostEntry):
     @property
     def delete_url(self) -> str:
         return reverse("delete_ticket", kwargs={"ticket_id": self.pk})
+
+    # @property
+    # def total_reviews(self):
+    #     """The number of reviews posted for this ticket."""
+    #     return self._total_reviews
+
+    # @total_reviews.setter
+    # def total_reviews(self, value: int):
+    #     """Sets the total number of reviews posted for this ticket.
+    #     Most likely set by an annotation."""
+    #     self._total_reviews = value
+
+    @property
+    def review_url(self) -> str:
+        return reverse("review_for_ticket", kwargs={"ticket_id": self.pk})
 
     def __str__(self):
         return self.title
@@ -160,6 +184,7 @@ class Review(AbstractPostEntry):
     headline = models.CharField(max_length=128)
     body = models.TextField(max_length=8192, blank=True)
 
+    @property
     def content_type(self) -> str:
         return "REVIEW"
 
@@ -194,17 +219,27 @@ class UserFollows(models.Model):
 
 
 class PostEntry:
-    """Proxy object to display tickets and reviews.
-    """
+    """Proxy object to display tickets and reviews."""
 
     def __init__(self, model_instance: AbstractPostEntry, user: User):
         self.instance: AbstractPostEntry = model_instance
         self.user = user
         self._edit_url = None
         self._delete_url = None
+        logger.debug(f"Create PostEntry on top of {model_instance.content_type} {model_instance}:")
+        if model_instance.content_type == "REVIEW":
+            logger.debug(f"  => Bind related ticket {model_instance.ticket}")
+            self._ticket = PostEntry(model_instance.ticket, user)
+        else:
+            self._ticket = None
+        self._commands: dict[dict] = {}
 
     def __getattr__(self, name: str):
         return getattr(self.instance, name)
+
+    @property
+    def ticket(self) -> "PostEntry":
+        return self._ticket
 
     @property
     def content_type(self) -> str:
@@ -252,6 +287,62 @@ class PostEntry:
         return self.is_author
 
     @property
+    def can_review(self) -> bool:
+        """True if the current user can create a review for this entry."""
+        if self.content_type != "TICKET":
+            return False
+        else:
+            return self.instance.total_reviews == 0
+
+    @property
     def is_author(self) -> bool:
         """True if the current user is the author of this entry."""
         return self.instance.author_id == self.user.pk
+
+    @property
+    def commands(self) -> list[dict]:
+        """A list of commands available for this Post."""
+        return list(self._commands.values())
+
+    def is_command_allowed(self, cmd_name):
+        """Returns True if a command is available."""
+        test_name = f"can_{cmd_name}"
+        try:
+            return getattr(self, test_name)
+        except AttributeError:
+            return False
+
+    def set_command(self, cmd_name: str, **kwargs):
+        """Sets the parameters for a command on this object, if the command is allowed.
+
+        This method applies default options for each command.
+        Command defaults can be overriden with the kwargs.
+
+        Usual command options:
+        - "url": (str)
+        - "method": (str) "POST" or "GET"
+        - "options": (dict)
+        """
+        if not self.is_command_allowed(cmd_name):
+            logger.debug(f"{cmd_name} is not allowed in {self}")
+            return
+        else:
+            logger.debug(f"Set command {cmd_name} in {self}")
+        cmd_defaults = {}
+        cmd_name = cmd_name.lower()
+        match (cmd_name):
+            case "edit":
+                cmd_defaults = {"url": self.edit_url, "method": "GET", "options": {}}
+            case "delete":
+                cmd_defaults = {"url": self.delete_url, "method": "POST", "options": {}}
+            case "review":
+                cmd_defaults = {"url": self.review_url, "method": "GET", "options": {}}
+
+        self._commands[cmd_name] = {"cmd_name": cmd_name} | cmd_defaults | kwargs
+
+    def unset_command(self, cmd_name: str):
+        """Removes a command from this object."""
+        del self._commands[cmd_name]
+
+    def __str__(self) -> str:
+        return f"(PostEntry) {self.content_type} #{self.instance.pk} {self.instance}"

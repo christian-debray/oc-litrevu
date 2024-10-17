@@ -2,14 +2,13 @@
 """
 
 from .models import Ticket, Review, PostEntry
-from . import helpers
 from django.http import HttpRequest
 
 
 def prepare_post_entry(
     post_obj: Review | Ticket,
     request: HttpRequest,
-    with_commands: bool = False,
+    with_commands: list = None,
     next_url: str = None,
 ) -> PostEntry:
     """Helper to convert a Review or Ticket instance into a PostEntry proxy object (see models).
@@ -25,19 +24,26 @@ def prepare_post_entry(
             False will set both urls to None.
         - next_url: if set, transforms the instance' edit_url and delete_url by adding a "next" query parameter,
             to help control execution flow and redirections after a successful command.
+
+    To set commands on a post entry, pass a dictionnary with the with_commands parameter.
+    Note: The entry's ID is implicit and is not required in the command options.
+
+    commands param example :
+    commands = [
+        # pass a dict to set edit command with custom parameters:
+        {'cmd_name': 'edit', 'cmd_url': "url/path/to/cmd", 'method': "GET", 'options': {'foo': 42, 'bar': "yellow"}},
+        # apply defaults:
+        {'cmd_name: 'review'},
+        # just pass a string to set delete command with default parameters:
+        "delete", # use the object default parameters
+    ]
     """
     entry = PostEntry(post_obj, request.user)
-
-    # no url transform required:
-    if not with_commands or not next_url:
-        entry.edit_url = None
-        entry.delete_url = None
-        return entry
-
-    # transform the entry's urls:
-    if entry.can_edit:
-        entry.edit_url = helpers.add_next_url(request=request, url=post_obj.edit_url, next_url=next_url)
-    if entry.can_delete:
-        entry.delete_url = helpers.add_next_url(request=request, url=post_obj.delete_url, next_url=next_url)
-
+    if with_commands and len(with_commands):
+        for cmd in with_commands:
+            if isinstance(cmd, str):
+                args = {"cmd_name": cmd}
+            else:
+                args = cmd
+            entry.set_command(**args)
     return entry
