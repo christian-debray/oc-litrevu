@@ -83,6 +83,9 @@ summary,
     --color_background--surface: white;
     --color_background--element: #f4f4f5;
     --color_background--chip: #e4e4e7;
+    --color_theme--dark: #490434;
+    --color_theme--light: #f0f0f0;
+    --color_theme--light-alt: #c0c0c0;
     --color_accent: var(--color_text--link);
 
     /* fonts */
@@ -297,11 +300,76 @@ rating-widget {
 /* ================== END: CUSTOM ELEMENTS ======================== */
 
 /* ======================== SECTION: LAYOUT ======================== */
-@media screen {}
+@media screen {
+    .container#outer {
+        padding: 0;
+        margin-bottom: 3rem;
+        margin-left: auto;
+        margin-right: auto;
+        border: solid 1px var(--color_theme--dark);
+    }
+
+    header {
+        margin: 0;
+        padding: 2.5rem 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        background-color: var(--color_theme--dark);
+        color: var(--color_theme--light);
+    }
+
+    header a {
+        color: var(--color_theme--light);
+    }
+
+    header .brand {
+        flex-grow: 1;
+        text-align: center;
+        font-size: var(--font_size--xlarge);
+        margin: 0 0 .5rem 0;
+        color: var(--color_theme--light)
+    }
+    
+    header nav .nav {
+        display: flex;
+        justify-content: center;
+        margin: 0;
+    }
+
+    .nav .nav-item {
+        padding: .2rem;
+        margin-left: .5rem;
+        margin-right: .5rem;
+    }
+
+    .nav-item a {
+        text-decoration: none
+    }
+
+    .nav-item a:hover {
+        color: var(--color_accent);
+    }
+
+
+    #outer > .messages {
+
+    }
+
+    main {
+        padding: 1rem;
+    }
+}
 /* ************ Smartphone **************** */
-@media screen and (max-width: 480px) {}
+@media screen and (max-width: 480px) {
+    .container#content {
+        width: 100%;
+    }
+}
 /* *************** Tablet  *************** */
-@media screen and (min-width: 481px) and (max-width: 1024px) {}
+@media screen and (min-width: 481px) and (max-width: 1024px) {
+
+}
 /* *************** Desktop  *************** */
 @media screen and (min-width: 1025px) {}
 /* ========================= END: LAYOUT =========================== */
