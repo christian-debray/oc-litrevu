@@ -9,6 +9,6 @@
     {% endif %}
     {{ register_form.as_p }}
     <input type="hidden" name="next" value="{{redirect_after_login}}">
-    <input type="submit" value="s'inscrire">
+    <button type="submit" name="action" value="register">s'inscrire</button>
     <a href="{%url "auth" %}">Je suis déjà inscrit</a>
 </form>

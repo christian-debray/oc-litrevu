@@ -1,5 +1,6 @@
 .debug {
-    display: inline-block;
+    /*display: inline-block;*/
+    display: none;
     background-color: darkgrey;
     color: darkslategray;
     border: solid 1px gray;
@@ -7,10 +8,300 @@
     padding: 1pt;
 }
 
+
+/* ============================================================== *
+                        SECTION: BOILERPLATE
+ * ============================================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+menu:not(article menu),
+ol:not(article ol),
+ul:not(article ul) {
+    list-style: none;
+}
+
+menu,
+ol,
+ul {
+    padding-left: 0;
+}
+
+article ol,
+article ul {
+    list-style-position: inside;
+}
+
+html {
+    font-size: 62.5%;
+    /* (62.5/100) * 16px = 10px  so 1rem = 10px*/
+}
+
+/* disable text-inflate algo */
+html {
+    -webkit-text-size-adjust: none;
+    /* for iOS Safari */
+    text-size-adjust: none;
+    /* for other mobile browsers */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+label,
+button,
+select,
+summary,
+[type=radio],
+[type=submit],
+[type=checkbox] {
+    cursor: pointer;
+}
+
+/* ================= END SECTION: BOILERPLATE  ================== */
+
+/* ================== SECTION: PROPERTIES  ====================== */
+
+:root {
+    /* colors */
+    --color_text--default: #18181b;
+    --color_text--subtle: #71717a;
+    --color_text--link: #6366f1;
+    --color_text--link-alt: #4f46e5;
+    --color_text--accent: var(--color_text--link);
+    --color_background--surface: white;
+    --color_background--element: #f4f4f5;
+    --color_background--chip: #e4e4e7;
+    --color_accent: var(--color_text--link);
+
+    /* fonts */
+    /* Font Families */
+    --font_body: "Roboto", system-ui, sans-serif;
+    --font_head: "Spline Sans";
+    --font_mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
+    /* font sizes */
+    --font_size--small: 1.5rem;
+    /* 15px */
+    --font_size--normal: 1.8rem;
+    /* 18px */
+    --font_size--medium: 2.2rem;
+    /* 22px */
+    --font_size--large: 2.6rem;
+    /* 26px */
+    --font_size--xlarge: 3.1rem;
+    /* 31px */
+    --font_size--xxlarge: 3.7rem;
+    /* 37px */
+    --font_size--xxxlarge: 4.5rem;
+    /* 45px */
+
+    /* Line heights */
+    --font_height--small: 1.2;
+    --font_height--normal: 1.8;
+    --font_height--medium: 1.5;
+    --font_height--large: 1.3;
+    --font_height--xlarge: 1.2;
+    --font_height--xxlarge: 1.1;
+    --font_height--xxxlarge: 1;
+}
+
+/* ================== END SECTION: PROPERTIES  =================== */
+
+/* ================== SECTION: TYPOGRAPHY ========================= */
+body {
+    font-family: var(--font_body);
+    font-size: var(--font_size--normal);
+    line-height: var(--font_height--normal);
+    color: var(--color_text--default);
+    background: var(--color_background--surface);
+    accent-color: var(--color_accent);
+}
+
+/* Heading typography */
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: var(--font_head);
+    font-weight: 600;
+}
+
+h1,
+.util_txt--h1 {
+    font-size: var(--font_size--xxxlarge);
+    line-height: var(--font_height--xxxlarge);
+}
+
+h2,
+.util_txt--h2 {
+    font-size: var(--font_size--xxlarge);
+    line-height: var(--font_height--xxlarge);
+}
+
+h3,
+.util_txt--h3 {
+    font-size: var(--font_size--xlarge);
+    line-height: var(--font_height--xlarge);
+}
+
+h4,
+.util_txt--h4 {
+    font-size: var(--font_size--large);
+    line-height: var(--font_height--large);
+}
+
+h5 {
+    font-size: var(--font_size--medium);
+    line-height: var(--font_height--medium);
+}
+
+/* Set typography for small text */
+
+small,
+.util_txt--small {
+    font-size: var(--font_size--small);
+    line-height: var(--font_height--small);
+}
+
+a:not([class]):hover,
+a:not([class]):focus {
+    text-decoration: underline;
+    text-decoration-color: var(--color_text--link-alt);
+    text-decoration-thickness: 2px;
+}
+/* ====================== END: TYPOGRAPHY ======================== */
+
+/* ================== SECTION: FORM ELEMENTS ===================== */
+
+/* Standardize labels */
+
+label, legend {
+    background-color: transparent;
+    font: inherit;
+  }
+  
+  /* Standard styles for normal inputs */
+  
+  input:not([type="checkbox"], [type="radio"], [type="color"]),
+  select,
+  textarea,
+  button {
+    font: inherit;
+    padding: var(--space_1);
+    display: block;
+    width: 100%;
+    border: 1px solid var(--color_text--subtle);
+    line-height: inherit;
+    box-sizing: border-box;
+    background: transparent;
+  }
+  
+  /* Remove border and padding for file inputs */
+  
+  input[type="file"] {
+    padding: var(--space_1) 0;
+    border: none;
+  }
+  
+  /* Set textarea default height and restrict resize to vertical */
+  
+  textarea {
+    resize: vertical;
+    min-height: 10rem;
+    font-family: var(--font_mono);
+    font-size: var(--font_size--small);
+    line-height: var(--font_height--small);
+  }
+
+/* mimic buttons */
+.button,
+.button--secondary,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  display: inline-block;
+  width: auto;
+  text-align: center;
+  white-space: nowrap;
+  text-decoration: none;
+  background-color: var(--color_text--link);
+  cursor: pointer;
+  box-sizing: border-box;
+  color: var(--color_background--surface);
+  border: 2px solid var(--color_text--link);
+  padding-inline: var(--space_4);
+  padding-block: var(--space_1);
+}
+
+a.button:hover,
+a.button--secondary:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+a.button:focus,
+a.button--secondary:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+input[type="button"]:focus {
+  border-color: var(--color_text--link-alt);
+  background-color: var(--color_text--link-alt);
+}
+
+.button--secondary,
+button[type="reset"],
+input[type="reset"] {
+  background-color: var(--color_background--surface);
+  color: var(--color_text--link);
+  border-color: var(--color_text--link);
+}
+
+a.button--secondary:hover,
+button[type="reset"]:hover,
+input[type="reset"]:hover,
+a.button--secondary:focus,
+button[type="reset"]:focus,
+input[type="reset"]:focus {
+  background-color: var(--color_background--surface);
+  color: var(--color_text--link-alt);
+  border-color: var(--color_text--link-alt);
+}
+
+/* ==================== END: FORM ELEMENTS ======================= */
+
+/* ================== SECTION: CUSTOM ELEMENTS =================== */
 rating-widget {
-    font-size: 15pt;
+    font-size: inherit;
     --full-star-fill-color: #9b6426;
     --full-star-stroke-color: #9b6426;
     --empty-star-fill-color: #e0e0e0;
     --empty-star-stroke-color: #666;
 }
+
+/* ================== END: CUSTOM ELEMENTS ======================== */
+
+/* ======================== SECTION: LAYOUT ======================== */
+@media screen {}
+/* ************ Smartphone **************** */
+@media screen and (max-width: 480px) {}
+/* *************** Tablet  *************** */
+@media screen and (min-width: 481px) and (max-width: 1024px) {}
+/* *************** Desktop  *************** */
+@media screen and (min-width: 1025px) {}
+/* ========================= END: LAYOUT =========================== */

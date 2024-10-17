@@ -13,7 +13,7 @@ logger = logging.getLogger()
 def register(request: HttpRequest):
     """Register a new user and redirect to user feed on success."""
     context = {}
-    if request.method == "POST":
+    if request.POST.get('action') == "register":
         register_form = RegisterForm(request.POST)
         if register_form.is_valid():
             username = register_form.cleaned_data.get("username").lower()
@@ -38,7 +38,7 @@ def register(request: HttpRequest):
 def auth(request: HttpRequest):
     """Autenticate an existing user and redirect to user feed on success."""
     context = {}
-    if request.method == "POST":
+    if request.POST.get('action') == "login":
         auth_form = AuthForm(request.POST)
         if auth_form.is_valid():
             username = auth_form.cleaned_data.get("username").lower()

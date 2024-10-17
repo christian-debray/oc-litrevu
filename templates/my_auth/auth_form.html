@@ -3,8 +3,8 @@
     {% if auth_form.errors %}
         <p class="error"><strong>Vérifiez votre login et mot de passe</strong></p>
     {% endif %}
-    <p><label for="{{auth_form.login.id_for_label}}">Nom d'utilisateur :</label>{{ auth_form.username }}</p>
-    <p><label for="{{ auth_form.password.id_for_label }}">Mot de passe :</label>{{ auth_form.password }}</p>
+    <p><label for="{{auth_form.login.id_for_label}}">Nom d'utilisateur </label>{{ auth_form.username }}</p>
+    <p><label for="{{ auth_form.password.id_for_label }}">Mot de passe </label>{{ auth_form.password }}</p>
     <input type="hidden" name="next" value="{{redirect_after_login}}">
-    <input type="submit" value="Se connecter">
+    <button type="submit" name="action" value="login">Se connecter</button>
 </form>
