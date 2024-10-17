@@ -428,6 +428,11 @@ rating-widget {
         margin-bottom: 3rem;
     }
 
+    .ticket-details img {
+        max-width: 20rem;
+        max-height: 25rem;
+    }
+
     article.review > article.ticket {
         margin-top: 1rem;
     }
@@ -476,6 +481,29 @@ rating-widget {
     .container#outer {
         width: 100%;
     }
+
+    .ticket-details {
+        display: grid;
+        justify-content: center;  
+    } 
+}
+
+@media screen and (min-width: 481px) {
+    .ticket-details {
+        display: grid;
+        gap: 1rem;
+        grid-auto-flow: dense;
+        grid-template-columns: auto 2fr;
+    }
+
+    .ticket-details img {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .ticket-details:has(img) p {
+        margin-top: 0
+    }
 }
 /* *************** Tablet  *************** */
 @media screen and (min-width: 481px) and (max-width: 1024px) {
@@ -483,7 +511,6 @@ rating-widget {
         font-size: 62.5%;
         /* (62.5/100) * 16px = 10px  so 1rem = 10px*/
     }
-
 }
 /* *************** Desktop  *************** */
 @media screen and (min-width: 1025px) {

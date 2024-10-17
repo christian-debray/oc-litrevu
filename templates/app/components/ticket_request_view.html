@@ -16,14 +16,14 @@
         {% endif %}
     </section>
     <h3><strong>{{ticket.title}}</strong></h3>
-    {% if ticket.description %}
-        <p>{{ticket.description}}</p>
-    {% endif %}
-    {% if ticket.image %}
-        <div class="w-25">
-            <img alt="{{ticket.title}}" class="img-fluid" src="{{ ticket.image.url }}">
-        </div>
-    {% endif %}
+    <div class="ticket-details">
+        {% if ticket.description %}
+            <p class="ticket-descripton">{{ticket.description}}</p>
+        {% endif %}
+        {% if ticket.image %}
+            <img alt="{{ticket.title}}" src="{{ ticket.image.url }}">
+        {% endif %}
+    </div>
     {% if ticket.commands %}
         {% include "app/components/post_entry_commands.html" with post_entry=ticket %}
     {% endif %}
