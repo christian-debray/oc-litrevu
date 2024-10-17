@@ -1,14 +1,18 @@
 {% autoescape on %}
-<article class="container border mb-3" aria-label="Ticket">
+<article class="post ticket" aria-label="Ticket">
     {% if debug %}
     <span class="debug">(ticket {{ticket.id}} by {{ticket.user_id}})</span>
     {% endif %}
-    <section aria-label="author-date">
-        <time>{{review.time_created}}</time>
-        {% if review.user_id != request.user.id %}
-            <p>{{review.user.display_name}} a demandé une critique</p>
+    <section class="author-date" aria-label="author-date">
+        {% if nested %}
+            <p>Ticket - {{ ticket.user.display_name }}</p>
         {% else %}
-            <p>Vous avez demandé une critique</p>
+            <time>{{ticket.time_created}}</time>
+            {% if ticket.user_id != request.user.id %}
+                <p>{{ticket.user.display_name}} a demandé une critique</p>
+            {% else %}
+                <p>Vous avez demandé une critique</p>
+            {% endif %}
         {% endif %}
     </section>
     <h3><strong>{{ticket.title}}</strong></h3>
@@ -20,11 +24,8 @@
             <img alt="{{ticket.title}}" class="img-fluid" src="{{ ticket.image.url }}">
         </div>
     {% endif %}
-    {% if ticket.total_reviews is not None %}
-        <p>{{ticket.total_reviews}} reviews</p>
-    {% endif %}
     {% if display_review_btn and ticket.total_reviews == 0 %}
-        <a class="btn btn-primary" href="{% url "review_for_ticket" ticket_id=ticket.pk %}">Créer une critique</a>
+        <a class="button" href="{% url "review_for_ticket" ticket_id=ticket.pk %}">Créer une critique</a>
     {% endif %}
     {% if display_commands %}
         {% include "app/components/post_entry_commands.html" with post_entry=ticket %}

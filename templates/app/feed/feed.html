@@ -2,10 +2,10 @@
 {% block title%}LITRevu - Flux{% endblock %}
 {% block content %}
 <section aria-label="commandes" class="flex-row">
-    <a class="btn btn-primary" role="button" href="{% url "new_ticket" %}">Demander une critique</a>
-    <a class="btn btn-primary" role="button" href="{%url "create_review" %}">Créer une critique</a>
+    <a class="button" role="button" href="{% url "new_ticket" %}">Demander une critique</a>
+    <a class="button" role="button" href="{%url "create_review" %}">Créer une critique</a>
 </section>
-<section aria-label="flux">
+<section aria-label="flux" class="feed">
     {% for entry in feed_entries %}
         {% if entry.content_type == "REVIEW" %}
             {% include "app/components/review_view.html" with review=entry display_commands=False%}

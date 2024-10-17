@@ -4,7 +4,7 @@
     <h1>{% if usecase == "update" %}Modifier{% else %}Créer{% endif %} une critique</h1>
     <div class="border mb-3">
         <p>Vous êtes en train de poster en réponse à</p>
-        {% include "app/components/ticket_request_view.html" %}
+        {% include "app/components/ticket_request_view.html" with nested=1%}
     </div>
     <form action="{{ edit_url }}" method="POST" class="border">
         <p>Critique</p>

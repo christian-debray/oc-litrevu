@@ -1,9 +1,9 @@
 {% autoescape on %}
-<article class="container border mb-3" aria-label="Critique">
+<article class="post review" aria-label="Critique">
     {% if debug %}
         <span class="debug" aria-hidden="true">(review {{review.id}} by {{review.user_id}})</span>
     {% endif %}
-    <section aria-label="author-date">
+    <section class="author-date" aria-label="author-date">
         <time>{{review.time_created}}</time>
         {% if review.user_id != request.user.id %}
             <p>{{review.user.display_name}} a posté une critique</p>
@@ -15,7 +15,7 @@
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>
-    {% include "app/components/ticket_request_view.html" with ticket=review.ticket display_commands=False %}
+    {% include "app/components/ticket_request_view.html" with ticket=review.ticket nested=1 display_commands=False %}
     {% if display_commands %}
         {% include "app/components/post_entry_commands.html" with post_entry=review %}
     {% endif %}
