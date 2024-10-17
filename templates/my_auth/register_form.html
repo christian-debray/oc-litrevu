@@ -7,8 +7,40 @@
         {% endfor %}
         </ul>
     {% endif %}
-    {{ register_form.as_p }}
-    <input type="hidden" name="next" value="{{redirect_after_login}}">
-    <button type="submit" name="action" value="register">s'inscrire</button>
-    <a href="{%url "auth" %}">Je suis déjà inscrit</a>
+    <div class="field">
+        <p class="input-box">
+            <label id="id_username_helptext" for="id_username">Nom d'utilisateur : <span aria-label="required">*</span></label>
+            {{register_form.username}}
+        </p>
+        {% if register_form.username.help_text %}
+        <p class="helptext">{{register_form.username.help_text}}</p>
+        {% endif %}
+    </div>
+    <div class="field">
+        <p class="input-box">
+            <label for="{{register_form.password.auto_id}}">Mot de passe : <span aria-label="required">*</span></label>
+            {{register_form.password}}
+        </p>
+        {% if password_help_text %}
+            <details id="id_password_helptext" class="helptext">
+                <summary>Choisissez un mot de passe suffisamment fort. <span class="summary-handle-text">(cliquez pour afficher nos recommandations)</span></summary>
+                <ul>
+                    {{password_help_text|unordered_list}}
+                </ul>
+            </details>
+        {% else %}
+            <p class="helptext">Choisissez un mot de passe suffisamment fort.</p>
+        {% endif %}
+    </div>
+    <div class="field">
+        <p class="input-box">
+            <label for="id_password_confirm">Confirmez votre mot de passe : <span aria-label="required">*</span></label>
+            <input type="password" name="password_confirm" required="" id="id_password_confirm">
+        </p>
+    </div>
+    <p class="commands">
+        <input type="hidden" name="next" value="{{redirect_after_login}}">
+        <button type="submit" name="action" value="register">s'inscrire</button>
+        <a href="{%url "auth" %}">Je suis déjà inscrit</a>
+    </p>
 </form>

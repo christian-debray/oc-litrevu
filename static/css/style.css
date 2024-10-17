@@ -199,23 +199,26 @@ a:not([class]):focus {
     text-decoration-color: var(--color_text--link-alt);
     text-decoration-thickness: 2px;
 }
+
 /* ====================== END: TYPOGRAPHY ======================== */
 
-/* ================== SECTION: FORM ELEMENTS ===================== */
+
+/* ================== SECTION: FORM ELEMENTS ==================== */
 
 /* Standardize labels */
 
-label, legend {
+label,
+legend {
     background-color: transparent;
     font: inherit;
-  }
-  
-  /* Standard styles for normal inputs */
-  
-  input:not([type="checkbox"], [type="radio"], [type="color"]),
-  select,
-  textarea,
-  button {
+}
+
+/* Standard styles for normal inputs */
+
+input:not([type="checkbox"], [type="radio"], [type="color"]),
+select,
+textarea,
+button {
     font: inherit;
     padding: var(--space_1);
     display: block;
@@ -224,24 +227,24 @@ label, legend {
     line-height: inherit;
     box-sizing: border-box;
     background: transparent;
-  }
-  
-  /* Remove border and padding for file inputs */
-  
-  input[type="file"] {
+}
+
+/* Remove border and padding for file inputs */
+
+input[type="file"] {
     padding: var(--space_1) 0;
     border: none;
-  }
-  
-  /* Set textarea default height and restrict resize to vertical */
-  
-  textarea {
+}
+
+/* Set textarea default height and restrict resize to vertical */
+
+textarea {
     resize: vertical;
     min-height: 10rem;
     font-family: var(--font_mono);
     font-size: var(--font_size--small);
     line-height: var(--font_height--small);
-  }
+}
 
 /* mimic buttons */
 .button,
@@ -250,19 +253,19 @@ button,
 input[type="submit"],
 input[type="reset"],
 input[type="button"] {
-  display: inline-block;
-  width: auto;
-  text-align: center;
-  white-space: nowrap;
-  text-decoration: none;
-  background-color: var(--color_text--link);
-  cursor: pointer;
-  box-sizing: border-box;
-  color: var(--color_background--surface);
-  border: 2px solid var(--color_text--link);
-  padding-inline: .3rem;
-  padding-block: .3rem;
-  border-radius: .5rem;
+    display: inline-block;
+    width: auto;
+    text-align: center;
+    white-space: nowrap;
+    text-decoration: none;
+    background-color: var(--color_text--link);
+    cursor: pointer;
+    box-sizing: border-box;
+    color: var(--color_background--surface);
+    border: 2px solid var(--color_text--link);
+    padding-inline: .3rem;
+    padding-block: .3rem;
+    border-radius: .5rem;
 }
 
 a.button:hover,
@@ -277,16 +280,16 @@ button:focus,
 input[type="submit"]:focus,
 input[type="reset"]:focus,
 input[type="button"]:focus {
-  border-color: var(--color_text--link-alt);
-  background-color: var(--color_text--link-alt);
+    border-color: var(--color_text--default);
+    background-color: var(--color_text--link-alt);
 }
 
 .button--secondary,
 button[type="reset"],
 input[type="reset"] {
-  background-color: var(--color_background--surface);
-  color: var(--color_text--link);
-  border-color: var(--color_text--link);
+    background-color: var(--color_background--surface);
+    color: var(--color_text--link);
+    border-color: var(--color_text--link);
 }
 
 a.button--secondary:hover,
@@ -295,9 +298,9 @@ input[type="reset"]:hover,
 a.button--secondary:focus,
 button[type="reset"]:focus,
 input[type="reset"]:focus {
-  background-color: var(--color_background--surface);
-  color: var(--color_text--link-alt);
-  border-color: var(--color_text--link-alt);
+    background-color: var(--color_background--surface);
+    color: var(--color_text--link-alt);
+    border-color: var(--color_text--link-alt);
 }
 
 /* ==================== END: FORM ELEMENTS ======================= */
@@ -344,7 +347,7 @@ rating-widget {
         margin: 0 0 .5rem 0;
         color: var(--color_text--light)
     }
-    
+
     header nav .nav {
         display: flex;
         justify-content: center;
@@ -373,58 +376,8 @@ rating-widget {
     article.post {
         padding: 1rem;
     }
-    
-    /**************** colors fun ******************/
 
-    .container#outer {
-    }
-    
-    main:has(.feed) {
-        background-color: var(--color_theme--light);
-        background-image: linear-gradient(0deg,var(--color_theme--dark) 0%, white 90%);
-        background-attachment: fixed;
-    }
-
-    main article.post {
-        background-color: var(--color_background--element);
-    }
-    
-    main article.post article.post {
-        background-color: var(--color_background--chip);
-    }
-    
-    .feed > article.post {
-        border-right: solid 1px var(--color_border-light);
-        border-left: solid 1px var(--color_border-light);
-        border-bottom: solid 4px var(--color_theme--dark);
-        border-top: solid 12px var(--color_border-light);
-        border-top-right-radius: 5px;
-        border-top-left-radius: 5px;
-        position: relative;
-        margin-top: 1rem
-    }
-
-    .feed > article.review:before {
-        content: "";
-        display: block;
-        position: absolute;
-        z-index: 10;
-        bottom: -1px;
-        left: -1px;
-        width: 0;
-        height: 0;
-        border-bottom: 4rem solid var(--color_border-dark);
-        border-right: 4rem solid transparent;
-    }
-
-    article.post > article.post {
-        border: solid 1px var(--color_border-light-alt);
-        border-radius: 10px;
-        background-color: var(--color_background--element);
-        color: var(--color_theme--dark)
-    }
-
-    .feed > article {
+    .feed>article {
         margin-bottom: 3rem;
     }
 
@@ -433,7 +386,7 @@ rating-widget {
         max-height: 25rem;
     }
 
-    article.review > article.ticket {
+    article.review>article.ticket {
         margin-top: 1rem;
     }
 
@@ -469,6 +422,143 @@ rating-widget {
         margin-top: 1rem
     }
 
+    /**************** colors and decoration ******************/
+
+    main:has(.feed) {
+        background-color: var(--color_theme--light);
+        background-image: linear-gradient(0deg, var(--color_theme--dark) 0%, white 90%);
+        background-attachment: fixed;
+    }
+
+    main article.post {
+        background-color: var(--color_background--element);
+    }
+
+    main article.post article.post {
+        background-color: var(--color_background--chip);
+    }
+
+    .feed>article.post {
+        border-right: solid 1px var(--color_border-light);
+        border-left: solid 1px var(--color_border-light);
+        border-bottom: solid 4px var(--color_theme--dark);
+        border-top: solid 12px var(--color_border-light);
+        border-top-right-radius: 5px;
+        border-top-left-radius: 5px;
+        position: relative;
+        margin-top: 1rem
+    }
+
+    .feed>article.review:before {
+        content: "";
+        display: block;
+        position: absolute;
+        z-index: 10;
+        bottom: -1px;
+        left: -1px;
+        width: 0;
+        height: 0;
+        border-bottom: 4rem solid var(--color_border-dark);
+        border-right: 4rem solid transparent;
+    }
+
+    article.post>article.post {
+        border: solid 1px var(--color_border-light-alt);
+        border-radius: 10px;
+        background-color: var(--color_background--element);
+        color: var(--color_theme--dark)
+    }
+
+    /* ================== SECTION: FORM ELEMENTS ==================== */
+
+    .field .input-box {
+        margin-bottom: .5rem
+    }
+
+    .field .helptext {
+        margin-top: 0;
+        color: var(--color_text--subtle);
+        font-style: italic;
+        font-size: var(--font_size--small);
+    }
+
+    
+    .field details.helptext ul {
+        margin: 0;
+    }
+    
+    .field details.helptext summary .summary-handle-text {
+        color: var(--color_text--link-alt);
+    }
+
+    .field details.helptext[open] summary .summary-handle-text {
+        display: none;
+    }
+
+    .field details.helptext[open] summary {
+        color: var(--color_text--link-alt);
+    }
+
+    .field details.helptext li {
+        margin-left: 2rem
+    }
+
+    /* adjust form fields */
+
+    .field .input-box {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .field .input-box label {
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: fit-content;
+    }
+
+    .field .input-box input {
+        flex-shrink: 1;
+        flex-grow: 1;
+        flex-basis: fit-content;
+    }
+
+    form .commands {
+        display: flex;
+        gap: 1rem;
+        justify-content: end;
+    }
+
+    /* ************* columns and presentational ****************/
+
+    .cols-2 {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .cols-2 > * {
+        flex: 1 1 fit-content
+    }
+
+    .border-rounded {
+        border: solid 1px var(--color_border-light);
+        border-radius: 1rem;
+    }
+
+    .padded-side {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .box-medium {
+        max-width: 75rem;
+        margin-inline: auto;
+    }
+
+    .box-small {
+        max-width: 40rem;
+    }
 }
 
 /* ************ Smartphone **************** */
@@ -484,8 +574,9 @@ rating-widget {
 
     .ticket-details {
         display: grid;
-        justify-content: center;  
-    } 
+        justify-content: center;
+    }
+
 }
 
 @media screen and (min-width: 481px) {
@@ -505,6 +596,7 @@ rating-widget {
         margin-top: 0
     }
 }
+
 /* *************** Tablet  *************** */
 @media screen and (min-width: 481px) and (max-width: 1024px) {
     html {
@@ -512,6 +604,7 @@ rating-widget {
         /* (62.5/100) * 16px = 10px  so 1rem = 10px*/
     }
 }
+
 /* *************** Desktop  *************** */
 @media screen and (min-width: 1025px) {
 
@@ -524,4 +617,5 @@ rating-widget {
         max-width: 1200px;
     }
 }
+
 /* ========================= END: LAYOUT =========================== */

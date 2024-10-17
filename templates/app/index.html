@@ -2,12 +2,14 @@
 
 {%block title %}LIT-review{% endblock %}
 {%block content %}
-    <main>
+    <main class="cols-2">
         <section>
-            <h2>Inscrivez-vous maintenant</h2>
-            <a class="button" href="{%url "register" %}">S'inscrire</a>
+            <center>
+                <h2>Inscrivez-vous maintenant</h2>
+                <a class="button" href="{%url "register" %}">S'inscrire</a>
+            </center>
         </section>
-        <section>
+        <section class="border-rounded padded-side box-small">
             <h2>Connectez-vous</h2>
             {% include "my_auth/auth_form.html" %}
         </section>

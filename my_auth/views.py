@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse
 from app.models import User
 from django.utils.translation import gettext as _
-from django.contrib.auth import login, authenticate, logout as django_logout
+from django.contrib.auth import login, authenticate, logout as django_logout, password_validation
 from .forms import AuthForm, RegisterForm
 from django.db import IntegrityError
 import logging
@@ -31,6 +31,7 @@ def register(request: HttpRequest):
     else:
         register_form = RegisterForm()
     context["register_form"] = register_form
+    context["password_help_text"] = password_validation.password_validators_help_texts()
     context["redirect_after_login"] = _redirect_url(request)
     return render(request, "app/register.html", context)
 
