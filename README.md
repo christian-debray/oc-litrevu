@@ -40,9 +40,10 @@ Check that the initial migration is already prepared:
 
     python manage.py showmigrations
 
--> 0001_initial should appear under the "app" section in the list of migrations.
+ --> `0001_initial` should appear under the "app" section in the list of migrations.
 
 If the initial migration is missing, try :
+
     python manage.py makemigrations app
 
 Once the initial migration is ready:
@@ -91,7 +92,7 @@ Start django's local server from a terminal:
 
 (hit Ctrl-C to stop the server anytime)
 
-The app will be available at adress http://127.0.0.1:8000/litrevu/
+The app will be available at the address http://127.0.0.1:8000/litrevu/
 
 ## 4. Manage the app as superuser
 
@@ -99,7 +100,7 @@ If not already done, create a superadmin account:
 
     python manage.py createsuperuser
 
-then run the local server, and go to: http://127.0.0.1:8000/litrevu/admin
+then run the local server, and go to: http://127.0.0.1:8000/admin
 
 # Configuration, testing and debugging
 
