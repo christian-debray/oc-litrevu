@@ -222,7 +222,7 @@ select,
 textarea,
 button {
     font: inherit;
-    padding: var(--space_1);
+    padding: .2rem .3rem;
     display: block;
     width: 100%;
     border: 1px solid var(--color_text--subtle);
@@ -234,7 +234,7 @@ button {
 /* Remove border and padding for file inputs */
 
 input[type="file"] {
-    padding: var(--space_1) 0;
+    padding: .2rem 0;
     border: none;
 }
 
