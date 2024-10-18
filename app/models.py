@@ -89,10 +89,9 @@ class UserManager(models.Manager):
         """Filter: Instances posted by user or followed by user."""
         # TODO
         # This will perform one additionnal query
-        # Find how to factorize both queries o and q
-        o = self.own(user)
-        f = self.followed(user)
-        return chain(o, f)
+        # Find how to factorize
+        followed_user_ids = [user.pk] + [x.pk for x in User.objects.filter(followed_by__user_id=user.pk).only("pk")]
+        return self.get_queryset().filter(user_id__in=followed_user_ids)
 
 
 class TicketUserManager(UserManager):
