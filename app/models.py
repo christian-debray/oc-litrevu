@@ -6,7 +6,6 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from abc import abstractmethod
 from django.utils.translation import gettext_lazy as _
-from itertools import chain
 import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
