@@ -1,7 +1,8 @@
 from django.test import TestCase
-from app.models import User, Ticket, Review
+from app.models import User, UserFollows, Ticket, Review
 from app.subscriptions import followed_users
 from django.db import models
+from itertools import chain
 
 
 class UserFollowsTestCase(TestCase):
@@ -113,3 +114,86 @@ class ReviewUserManagerTestCase(TestCase):
                 test_data["reviews"],
                 f"results don't match for user #{user.pk} {user}: expected {test_data['reviews']}, found {review_ids}",
             )
+
+
+class UserFeedTestCase(TestCase):
+    def setUp(self):
+        alice = User.objects.create(username="alice", password="Ab1;mlkjhgfdsq")
+        bob = User.objects.create(username="bob", password="Ab1;mlkjhgfdsq")
+        cecile = User.objects.create(username="cecile", password="Ab1;mlkjhgfdsq")
+        UserFollows.objects.create(user=alice, followed_user=bob)
+        UserFollows.objects.create(user=bob, followed_user=cecile)
+        UserFollows.objects.create(user=cecile, followed_user=bob)
+
+    def _user_feed(self, user):
+        review_query_set = Review.with_user_manager.own_or_followed(user)
+        ticket_query_set = Ticket.with_user_manager.own_or_followed(user)
+        return sorted(
+            chain(
+                review_query_set,
+                ticket_query_set
+            ),
+            key=lambda x: x.time_created,
+        )
+
+    def test_bob_posts_ticket(self):
+        """Bob posts a ticket.
+            - Alice should see bob's ticket
+        """
+        bob = User.objects.get(username="bob")
+        alice = User.objects.get(username="alice")
+        bob_ticket = Ticket.objects.create(user=bob, title="Ubik", description="requested by bob")
+        alice_feed = Ticket.with_user_manager.own_or_followed(user=alice)
+        self.assertIn(bob_ticket, alice_feed)
+
+    def test_cecile_reviews_ticket_from_bob(self):
+        """Bob posts a ticket, cecil posts a review for bob's ticket.
+            - Bob should see cecile's review.
+            - Cecile should see bob's ticket.
+            - Alice should see bob's ticket.
+            - Alice should not see cecile's review.
+        """
+        bob = User.objects.get(username="bob")
+        cecile = User.objects.get(username="cecile")
+        alice = User.objects.get(username="alice")
+        bob_ticket = Ticket.objects.create(user=bob, title="Ubik", description="requested by bob")
+        cecile_review = Review.objects.create(
+            user=cecile,
+            ticket=bob_ticket,
+            rating=5,
+            headline="fantastic",
+        )
+        bob_feed = Review.with_user_manager.own_or_followed(user=bob)
+        cecile_feed = Ticket.with_user_manager.own_or_followed(user=cecile)
+        self.assertIn(bob_ticket, cecile_feed)
+        self.assertIn(cecile_review, bob_feed)
+        alice_feed = self._user_feed(alice)
+        self.assertIn(bob_ticket, alice_feed)
+        self.assertNotIn(cecile_review, alice_feed)
+
+    def test_alice_reviews_ticket_from_bob(self):
+        """Bob posts a ticket. Alice sees the ticket and posts a review to bob's ticket.
+             - Alice should see bob's ticket
+             - Cecile should see bob's ticket
+             - Bob should see Alice's review
+             - Cecile should not see Alice's review.
+        """
+        bob = User.objects.get(username="bob")
+        alice = User.objects.get(username="alice")
+        cecile = User.objects.get(username="cecile")
+        bob_ticket = Ticket.objects.create(user=bob, title="Ubik", description="requested by bob")
+        alice_review = Review.objects.create(
+            user=alice,
+            ticket=bob_ticket,
+            rating=3,
+            headline="Not bad",
+            body="alice reviewd bob's ticket, bob should see this review even though he doesn't follow alice.")
+        bob_feed = self._user_feed(bob)
+        alice_feed = self._user_feed(alice)
+        cecile_feed = self._user_feed(cecile)
+        self.assertIn(bob_ticket, alice_feed)
+        self.assertIn(alice_review, alice_feed)
+        self.assertIn(bob_ticket, cecile_feed)
+        self.assertNotIn(alice_review, cecile_feed)
+        self.assertIn(bob_ticket, bob_feed)
+        self.assertIn(alice_review, bob_feed)
