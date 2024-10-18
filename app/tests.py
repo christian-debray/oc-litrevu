@@ -98,7 +98,7 @@ class ReviewUserManagerTestCase(TestCase):
     def test_find_reviews_followed_by_user(self):
         """Finds all reviews followed by a user"""
         expectations = [
-            {"user.pk": 2, "reviews": [1, 3]},
+            {"user.pk": 2, "reviews": [1, 2, 3]},
             {"user.pk": 3, "reviews": [1, 3]},
             {"user.pk": 4, "reviews": [3]},
             {"user.pk": 5, "reviews": [1, 2, 3]},

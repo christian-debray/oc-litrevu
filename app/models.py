@@ -86,11 +86,7 @@ class UserManager(models.Manager):
 
     def own_or_followed(self, user: User):
         """Filter: Instances posted by user or followed by user."""
-        # TODO
-        # This will perform one additionnal query
-        # Find how to factorize
-        followed_user_ids = [user.pk] + [x.pk for x in User.objects.filter(followed_by__user_id=user.pk).only("pk")]
-        return self.get_queryset().filter(user_id__in=followed_user_ids)
+        return self.own(user).union(self.followed(user))
 
 
 class TicketUserManager(UserManager):
@@ -123,6 +119,16 @@ class ReviewUserManager(UserManager):
             .select_related("ticket")
             .select_related("ticket__user")
         )
+
+    def to_own_tickets(self, user: User):
+        """Returns reviews related to user's tickets.
+        """
+        return self.get_queryset().filter(ticket__user_id=user.pk)
+
+    def own_or_followed(self, user: User):
+        """Filter: Instances posted by user or followed by user. Also include all reviews to own's tickets.
+        """
+        return self.own(user).union(self.to_own_tickets(user)).union(self.followed(user))
 
 
 class Ticket(AbstractPostEntry):
