@@ -212,7 +212,7 @@
     ticket: 2
     rating: 4
     headline: ObservEr's review of Lord of the Flies
-    body: "Should be visible to ObsErvEr and Toto_23"
+    body: "Should be visible to ObsErvEr and Alix"
 - model: app.review
   pk: 3
   fields:

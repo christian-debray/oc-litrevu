@@ -7,7 +7,7 @@ A community book reviewing app
 
 # Dependencies and requirements
 
-This app requires [Python 3.8+](https://www.python.org/) and [Django 5.1](https://www.djangoproject.com/) (see installation notes below).
+This app requires [Python 3.10+](https://www.python.org/) and [Django 5.1](https://www.djangoproject.com/) (see installation notes below).
 
 The app's database is powered by SQLite3 (shipped with Python by default).
 
@@ -61,11 +61,11 @@ If you wish to try the app with some pre-loaded data, you can load the fixtures 
 
 load from YAML file (requires PyYAML):
 
-    python manage.py loaddata --app app initial.yaml
+    python manage.py loaddata --app app tests.yaml
 
 or load from JSON (JSON format is always available but less human-readable)
     
-    python manage.py loaddata --app app initial.json
+    python manage.py loaddata --app app tests.json
 
 #### 2.3.1 Available user accounts for testing:
 
@@ -100,3 +100,11 @@ If not already done, create a superadmin account:
     python manage.py createsuperuser
 
 then run the local server, and go to: http://127.0.0.1:8000/litrevu/admin
+
+# Configuration, testing and debugging
+
+Settings for Django are located in `litrevu/settings.py`.
+
+The **Django debug toolbar** is already set up, a `DISPLAY_DEBUG_TOOLBAR` flag in settings.yml controls wether it should run.
+
+The app's unit tests are found in `app/tests.py`. The tests require the test fixtures found in `app/fixtures/tests.yaml`.
