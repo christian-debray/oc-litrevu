@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-11 07:31+0000\n"
+"POT-Creation-Date: 2024-10-18 13:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,63 +17,115 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-#: views.py:73
+
+#: models.py:27
+msgid "username"
+msgstr "nom d'utilisateur"
+
+#: models.py:30
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr "Requis. 150 charactères ou moins. Lettres, chiffres et @/./+/-/_."
+
+#: models.py:130
+msgid "title"
+msgstr "titre"
+
+#: models.py:131
+msgid "description"
+msgstr "description"
+
+#: models.py:134
+msgid "image"
+msgstr "image"
+
+#: models.py:139
+msgid "ticket"
+msgstr "ticket"
+
+#: models.py:140
+msgid "tickets"
+msgstr "tickets"
+
+#: models.py:187
+msgid "rating"
+msgstr "note"
+
+#: models.py:191
+msgid "headline"
+msgstr "titre"
+
+#: models.py:192
+msgid "body"
+msgstr "corps"
+
+#: models.py:195
+msgid "review"
+msgstr "critique"
+
+#: models.py:196
+msgid "reviews"
+msgstr "critiques"
+
+#: views.py:80
 #, python-format
 msgid "You are now following %(username)s"
 msgstr "Vous suivez désormais %(username)s"
 
-#: views.py:78
+#: views.py:85
 msgid "Operation failed!"
 msgstr "L'opération a échoué !"
 
-#: views.py:81
+#: views.py:88
 msgid "User does not exist or is already being followed."
 msgstr "Cet utilisateur n'existe pas ou est déjà suivi."
 
-#: views.py:94
+#: views.py:101
 #, python-format
 msgid "Canceled subscription to %(followed_username)s."
 msgstr "Vous ne suivez plus %(followed_username)s."
 
-#: views.py:99
+#: views.py:106
 msgid "Failed to cancel a subscription !"
 msgstr ""
 
-#: views.py:101
+#: views.py:108
 msgid "Subscription not found !"
 msgstr ""
 
-#: views.py:110
+#: views.py:117
 #, python-format
 msgid "Created a new ticket #%(ticket_id)i: %(ticket_title)s"
 msgstr "Création du nouveau ticket #%(ticket_id)i : %(ticket_title)s"
 
-#: views.py:125
+#: views.py:132
 #, python-format
 msgid "Updated ticket #%(ticket_id)i: %(ticket_title)s"
 msgstr "Mise à jour du ticket #%(ticket_id)i : %(ticket_title)s"
 
-#: views.py:176
+#: views.py:183
 #, python-format
 msgid "Ticket #%(ticket_id)i deleted: %(ticket_title)s"
 msgstr "Suppression du ticket Ticket #%(ticket_id)i : %(ticket_title)s"
 
-#: views.py:197
+#: views.py:203
 #, python-format
 msgid "You posted a new review in reply to ticket #%(ticket_id)d"
-msgstr "Vous avez posté une nouvelle critique en réponse au ticket #%(ticket_id)d."
+msgstr ""
+"Vous avez posté une nouvelle critique en réponse au ticket #%(ticket_id)d."
 
-#: views.py:211
+#: views.py:219
 #, python-format
 msgid "Updated your review in reply to ticket #%(ticket_id)d"
 msgstr "Mise à jour de votre critique en réponse au ticket #%(ticket_id)d."
 
-#: views.py:263
+#: views.py:271
 #, python-format
 msgid "Created a new review for %(ticket_title)s"
 msgstr "Création d'une nouvelle critique pour %(ticket_title)s."
 
-#: views.py:284
+#: views.py:292
 #, python-format
 msgid "Deleted Review #%(review_id)d to ticket #%(ticket_id)d"
-msgstr "Suppression de la critique #%(review_id)d en réponse au ticket #%(ticket_id)d."
+msgstr ""
+"Suppression de la critique #%(review_id)d en réponse au ticket "
+"#%(ticket_id)d."

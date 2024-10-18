@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from abc import abstractmethod
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -127,11 +127,17 @@ class Ticket(AbstractPostEntry):
     objects = models.Manager()
     with_user_manager = TicketUserManager()
 
-    title = models.CharField(max_length=128)
-    description = models.TextField(max_length=2048, blank=True)
+    title = models.CharField(verbose_name=_("title"), max_length=128)
+    description = models.TextField(verbose_name=_("description"), max_length=2048, blank=True)
     image = models.ImageField(
-        null=True, blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
+        null=True,
+        verbose_name=_("image"),
+        blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
     )
+
+    class Meta:
+        verbose_name = _("ticket")
+        verbose_name_plural = _("tickets")
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -149,16 +155,16 @@ class Ticket(AbstractPostEntry):
     def delete_url(self) -> str:
         return reverse("delete_ticket", kwargs={"ticket_id": self.pk})
 
-    # @property
-    # def total_reviews(self):
-    #     """The number of reviews posted for this ticket."""
-    #     return self._total_reviews
+    @property
+    def total_reviews(self):
+        """The number of reviews posted for this ticket."""
+        return self._total_reviews
 
-    # @total_reviews.setter
-    # def total_reviews(self, value: int):
-    #     """Sets the total number of reviews posted for this ticket.
-    #     Most likely set by an annotation."""
-    #     self._total_reviews = value
+    @total_reviews.setter
+    def total_reviews(self, value: int):
+        """Sets the total number of reviews posted for this ticket.
+        Most likely set by an annotation."""
+        self._total_reviews = value
 
     @property
     def review_url(self) -> str:
@@ -178,11 +184,16 @@ class Review(AbstractPostEntry):
 
     ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
+        verbose_name=_("rating"),
         # validates that rating must be between 0 and 5
         validators=[MinValueValidator(0), MaxValueValidator(5)]
     )
-    headline = models.CharField(max_length=128)
-    body = models.TextField(max_length=8192, blank=True)
+    headline = models.CharField(verbose_name=_("headline"), max_length=128)
+    body = models.TextField(verbose_name=_("body"), max_length=8192, blank=True)
+
+    class Meta:
+        verbose_name = _("review")
+        verbose_name_plural = _("reviews")
 
     @property
     def content_type(self) -> str:
