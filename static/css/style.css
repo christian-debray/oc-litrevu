@@ -45,6 +45,14 @@ html {
     /* (62.5/100) * 16px = 10px  so 1rem = 10px*/
 }
 
+@media screen {
+    html {
+        /* responsive font-size base: adjust smallest font size between 10 and 14px */
+        /* see https://matthewjamestaylor.com/responsive-font-size */
+        font-size: calc(min(14px, 10px + 0.2vw));
+    }
+}
+
 /* disable text-inflate algo */
 html {
     -webkit-text-size-adjust: none;
@@ -87,7 +95,7 @@ summary,
     --color_background--chip: #e4e4e7;
     --color_theme--dark: #490434;
     --color_theme--light: #bf97b3;
-    --color_theme--light-alt: #c0c0c0;
+    --color_theme--light-alt: #fdf2f2;
     --color_border-dark: var(--color_theme--dark);
     --color_border-light: var(--color_theme--light);
     --color_border-light-alt: #cccccc;
@@ -100,20 +108,13 @@ summary,
     --font_mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
 
     /* font sizes */
-    --font_size--small: 1.5rem;
-    /* 15px */
-    --font_size--normal: 1.8rem;
-    /* 18px */
-    --font_size--medium: 2.2rem;
-    /* 22px */
-    --font_size--large: 2.6rem;
-    /* 26px */
-    --font_size--xlarge: 3.1rem;
-    /* 31px */
-    --font_size--xxlarge: 3.7rem;
-    /* 37px */
-    --font_size--xxxlarge: 4.5rem;
-    /* 45px */
+    --font_size--small: 1.3rem;
+    --font_size--normal: 1.6rem;
+    --font_size--medium: 2.0rem;
+    --font_size--large: 2.4rem;
+    --font_size--xlarge: 2.8rem;
+    --font_size--xxlarge: 3.3rem;
+    --font_size--xxxlarge: 3.8rem;
 
     /* Line heights */
     --font_height--small: 1.2;
@@ -386,6 +387,7 @@ article > h3:first-child {
 
     header nav .nav {
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
         margin: 0;
     }
@@ -450,8 +452,28 @@ article > h3:first-child {
         gap: 1rem;
         margin-top: 1rem
     }
-
+    
     /**************** colors and decoration ******************/
+    body {
+        background-color: var(--color_theme--light-alt);
+        background-color: #e3e3e3;
+        background: linear-gradient(0deg, var(--color_theme--dark), 30%, var(--color_theme--light-alt));
+        background-attachment: fixed;
+    }
+    
+    main {
+        background-color: #F9F9F9;
+    }
+
+    main h1:first-child {
+        color: var(--color_theme--dark);
+    }
+
+
+    input:not([type="checkbox"], [type="radio"], [type="color"]), select, textarea {
+        background-color: var(--color_background--surface);
+    }
+
     .card {
         background-color: var(--color_background--element);
         border: solid 1px var(--color_border-light);
@@ -465,13 +487,12 @@ article > h3:first-child {
         border-radius: 1rem;
         padding: 1rem;
     }
-
+/*
     main:has(.feed) {
-        background-color: var(--color_theme--light);
         background-image: linear-gradient(0deg, var(--color_theme--dark) 0%, white 90%);
         background-attachment: fixed;
     }
-
+*/
     main article.post {
         background-color: var(--color_background--element);
     }
@@ -640,10 +661,6 @@ article > h3:first-child {
 
 /* ************ Smartphone **************** */
 @media screen and (max-width: 480px) {
-    html {
-        font-size: 55%;
-        /* (62.5/100) * 16px = 10px  so 1rem = 10px*/
-    }
 
     .container#outer {
         width: 100%;
@@ -712,23 +729,33 @@ article > h3:first-child {
 
 /* *************** Tablet  *************** */
 @media screen and (min-width: 481px) and (max-width: 1024px) {
-    html {
-        font-size: 62.5%;
-        /* (62.5/100) * 16px = 10px  so 1rem = 10px*/
-    }
+
 }
 
 /* *************** Desktop  *************** */
 @media screen and (min-width: 1025px) {
 
-    html {
-        font-size: 70.5%;
-        /* (62.5/100) * 16px = 10px  so 1rem = 10px*/
+    .container#outer {
+        min-height: 90vh;
+        max-width: 85vw;
+        background-color: #F9F9F9;
+        display: flex;
+        flex-direction: column;
     }
 
-    .container#outer {
-        max-width: 1200px;
+    header {
+        width: 100%;
+        margin-top: 0;
     }
+
+    main {
+        background-color: transparent;
+        margin: auto;
+        width: 90%;
+    }
+     main:has(.feed) {
+        width: 70%;
+     }
 }
 
 /* ========================= END: LAYOUT =========================== */
