@@ -18,16 +18,16 @@
 </div>
 <div>
     <h2>Abonnements</h2>
-    <ul>
+    <ul class="list-as-cells" id="subscriptions_list_following">
     {% for u in following %}
-        <li >{{u.display_name}} <a href="{% url 'cancel_subscription' u.pk %}">désabonner</a></li>
+        <li><span>{{u.display_name}}</span> <a href="{% url 'cancel_subscription' u.pk %}">désabonner</a></li>
     {% endfor %}
     </ul>
 <div>
     <h2>Abonnés</h2>
-    <ul>
+    <ul class="list-as-cells" id="subscriptions_list_followers">
         {% for u in followers %}
-            <li>{{u.display_name}}</li>
+            <li><span>{{u.display_name}}</span></li>
         {% endfor %}
     </ul>
 </div>

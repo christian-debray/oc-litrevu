@@ -587,6 +587,27 @@ rating-widget {
         max-width: 40rem;
         margin-inline: auto;
     }
+
+    .list-as-cells {
+        display: grid;
+        grid-template-columns: auto;
+        gap: 0;
+        width: 100%;
+    }
+
+    .list-as-cells > li {
+        display: contents;
+    }
+
+    .list-as-cells > li:nth-child(2n) {
+        background-color: var(--color_background--chip);
+    }
+
+    .list-as-cells > li > * {
+        background-color: inherit;
+        padding: .5rem 1rem;
+        border: solid 1px var(--color_border-light-alt);
+    }
 }
 
 /* ************ Smartphone **************** */
@@ -652,4 +673,8 @@ rating-widget {
 .review-form #id_rating {
     display: flex;
     gap: 2rem;
+}
+
+.list-as-cells#subscriptions_list_following {
+    grid-template-columns: auto max-content;
 }
