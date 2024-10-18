@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,7 +39,6 @@ INSTALLED_APPS = [
     'app',
     'my_auth',
     'bootstrap5',
-    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -51,7 +49,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'litrevu.urls'
@@ -197,3 +194,9 @@ FILE_UPLOAD_HANDLERS = [
 # configure storage of media files, ie Ticket images
 MEDIA_ROOT = Path(BASE_DIR, "media/").resolve()
 MEDIA_URL = "/media/"
+
+# Django Debug Toolbar
+DISPLAY_DEBUG_TOOLBAR = False
+if DISPLAY_DEBUG_TOOLBAR:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')

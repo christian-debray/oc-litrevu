@@ -34,5 +34,6 @@ urlpatterns = [
     So we include the media URLs only in developpement...
  """
 if settings.DEBUG:
-    urlpatterns += debug_toolbar_urls()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    if settings.DISPLAY_DEBUG_TOOLBAR:
+        urlpatterns += debug_toolbar_urls()
