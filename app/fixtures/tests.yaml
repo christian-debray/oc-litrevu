@@ -1,0 +1,224 @@
+# User model: admin, Alix, Toto_23, Bob, ObservEr
+- model: app.user
+  pk: 1
+  fields:
+    # admin
+    password: pbkdf2_sha256$870000$j0WK5bvzSzivEqt4YpCc1C$8Z23dftGecFCA9kqiP5xKxPlWZBMo3bBb77DKC4yLIo=
+    last_login: 2024-10-11 22:49:45.825966+00:00
+    is_superuser: true
+    username: admin
+    first_name: ''
+    last_name: ''
+    email: admin@test.com
+    is_staff: true
+    is_active: true
+    date_joined: 2024-10-11 22:39:58.055858+00:00
+    display_name: admin
+    groups: []
+    user_permissions: []
+- model: app.user
+  pk: 2
+  fields:
+    # Ab1;mlkjhgfdsq
+    password: pbkdf2_sha256$870000$UxYYMRXhprjmHs6oZtt30M$STG9a8pn+7ETQkJ94sCGpoxciZHqc6syE7q4chEgLlA=
+    last_login: 2024-10-11 22:45:22.382904+00:00
+    is_superuser: false
+    username: alix
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: false
+    is_active: true
+    date_joined: 2024-10-11 22:45:22.121659+00:00
+    display_name: Alix
+    groups: []
+    user_permissions: []
+- model: app.user
+  pk: 3
+  fields:
+    # Ab1;mlkjhgfdsq
+    password: pbkdf2_sha256$870000$WpAP7ehitWbAtmkWKQOkM5$rDsphRDrkMov73pe0C3MBYe3dKgcOQbKryX+oRVJt7w=
+    last_login: 2024-10-11 22:47:01.832520+00:00
+    is_superuser: false
+    username: toto_23
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: false
+    is_active: true
+    date_joined: 2024-10-11 22:47:01.559868+00:00
+    display_name: Toto_23
+    groups: []
+    user_permissions: []
+- model: app.user
+  pk: 4
+  fields:
+    # Ab1;mlkjhgfdsq
+    password: pbkdf2_sha256$870000$1bsZ03jMZPZ4SLYqz8CPTF$kfZh/AApiJdOr4WIdGybYC9xLMOcL3xVgXE9AueHEC4=
+    last_login: 2024-10-11 22:48:33.914225+00:00
+    is_superuser: false
+    username: reviewservice
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: false
+    is_active: true
+    date_joined: 2024-10-11 22:48:33.648357+00:00
+    display_name: ReviewService
+    groups: []
+    user_permissions: []
+- model: app.user
+  pk: 5
+  fields:
+    # Ab1;mlkjhgfdsq
+    password: pbkdf2_sha256$870000$82RJId2VReHBuuXfBnC7Qz$1ZB9FKsyyxdzcK8Xx+LNypivEIW6DPHeMRiM5mTZO6M=
+    last_login: 2024-10-11 22:49:20.845268+00:00
+    is_superuser: false
+    username: observer
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: false
+    is_active: true
+    date_joined: 2024-10-11 22:49:20.570971+00:00
+    display_name: ObservEr
+    groups: []
+    user_permissions: []
+- model: app.user
+  pk: 6
+  fields:
+    # Ab1;mlkjhgfdsq
+    password: pbkdf2_sha256$870000$MC33egdQ2jHJaAjlhbVKEW$E3v+uC1DqTFWJrNuzzTz72HChSQhcgm8l8/fAEGsAiM=
+    last_login: 2024-10-11 23:19:20.441538+00:00
+    is_superuser: false
+    username: bob
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: false
+    is_active: true
+    date_joined: 2024-10-11 23:19:20.177081+00:00
+    display_name: Bob
+    groups: []
+    user_permissions: []
+# UserFollows relationships
+# Alix follows Toto_23 and ReviewService
+- model: app.userfollows
+  pk: 1
+  fields:
+    user: 2
+    followed_user: 3
+- model: app.userfollows
+  pk: 2
+  fields:
+    user: 2
+    followed_user: 4
+# Toto_23 follows Alice, ReviewService and Bob
+- model: app.userfollows
+  pk: 3
+  fields:
+    user: 3
+    followed_user: 2
+- model: app.userfollows
+  pk: 4
+  fields:
+    user: 3
+    followed_user: 4
+- model: app.userfollows
+  pk: 5
+  fields:
+    user: 3
+    followed_user: 6
+# Bob follows Toto_23 and ReviewService
+- model: app.userfollows
+  pk: 6
+  fields:
+    user: 6
+    followed_user: 3
+- model: app.userfollows
+  pk: 7
+  fields:
+    user: 6
+    followed_user: 4
+# ObservEr observes everyone: Alix, Toto_23, ReviewService and Bob
+- model: app.userfollows
+  pk: 8
+  fields:
+    user: 5
+    followed_user: 2
+- model: app.userfollows
+  pk: 9
+  fields:
+    user: 5
+    followed_user: 3
+- model: app.userfollows
+  pk: 10
+  fields:
+    user: 5
+    followed_user: 4
+- model: app.userfollows
+  pk: 11
+  fields:
+    user: 5
+    followed_user: 6
+# Tickets
+- model: app.ticket
+  pk: 1
+  fields:
+    user: 2
+    time_created: 2024-10-11 22:49:45.825966+00:00
+    title: Le Seigneur des Anneaux - J.R.R Tolkien
+    description: (Posted by Alix, should be visible to Toto_23 and ObservEr)
+    image: ''
+- model: app.ticket
+  pk: 2
+  fields:
+    user: 2
+    time_created: 2024-10-11 23:49:45.825966+00:00
+    title: Lord of the Flies - W. Golding
+    description: (Posted by Alix, should be visible to Toto_23 and ObservEr)
+    image: ''
+- model: app.ticket
+  pk: 3
+  fields:
+    user: 3
+    time_created: 2024-10-11 22:51:01.832520+00:00
+    title: Le Vieil Homme et La Mer - E. Hemingway
+    description: (Posted by Toto_23, should be visible to Alix, ObservEr and Bob)
+    image: ''
+- model: app.ticket
+  pk: 4
+  fields:
+    user: 4
+    time_created: 2024-10-11 23:48:33.914225+00:00
+    title: Les Raisins de la Colère - J. Steinbeck
+    description: (Posted by ReviewService, should be visible on all feeds)
+    image: ''
+# Reviews
+- model: app.review
+  pk: 1
+  fields:
+    user: 3
+    time_created: 2024-10-12 22:49:45.825966+00:00
+    ticket: 1
+    rating: 2
+    headline: Toto_23's review of Le Seigneur des Anneaux
+    body: "Should be visible to\r\nAlix,\r\nObservEr\r\nand Bob"
+- model: app.review
+  pk: 2
+  fields:
+    user: 5
+    time_created: 2024-10-12 11:49:45.825966+00:00
+    ticket: 2
+    rating: 4
+    headline: ObservEr's review of Lord of the Flies
+    body: "Should be visible to ObsErvEr and Toto_23"
+- model: app.review
+  pk: 3
+  fields:
+    user: 4
+    time_created: 2024-10-11 23:48:33.914227+00:00
+    ticket: 4
+    rating: 5
+    headline: ReviewService's review of Les Raisins de la Colère
+    body: "Should be visible to everyone"
