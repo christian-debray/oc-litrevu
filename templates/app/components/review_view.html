@@ -11,7 +11,7 @@
             <p>{{review.author_name}} a posté une critique</p>
         {% endif %}
     </section>
-    <h3><strong>{{review.headline}}</strong> - <rating-widget aria-label="note : {{review.rating}} sur 5" data-rating="{{review.rating}}" data-max-rating="5">{{review.rating}}/5</rating-widget></h3>
+    <h3>{{review.headline}} <rating-widget aria-label="note : {{review.rating}} sur 5" data-rating="{{review.rating}}" data-max-rating="5">{{review.rating}}/5</rating-widget></h3>
     <div>
         {{review.body|default:"-"|linebreaks}}
     </div>

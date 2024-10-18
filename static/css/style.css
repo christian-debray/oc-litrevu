@@ -309,15 +309,55 @@ input[type="reset"]:focus {
 /* ================== SECTION: CUSTOM ELEMENTS =================== */
 rating-widget {
     font-size: inherit;
+    line-height: inherit;
+    display: inline-block;
     --full-star-fill-color: #9b6426;
     --full-star-stroke-color: #9b6426;
     --empty-star-fill-color: #e0e0e0;
     --empty-star-stroke-color: #666;
 }
 
+rating-widget:before {
+    content: " - ";
+    display: inline;
+}
+
 /* ================== END: CUSTOM ELEMENTS ======================== */
 
 /* ======================== SECTION: LAYOUT ======================== */
+
+h1, h2 {
+    text-align: center;
+}
+
+article {
+    padding: 1rem;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+article:last-child {
+    margin-bottom: 0
+}
+
+article:first-child {
+    margin-top: 0
+}
+
+article > h1:first-child,
+article > h2:first-child,
+article > h3:first-child {
+    margin-top: 0;
+}
+
+.post h3 {
+    text-align: left;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    font-size: var(--font_size--large);
+    line-height: var(--font_size--x-large);
+}
+
 @media screen {
     .container#outer {
         padding: 0;

@@ -1,10 +1,10 @@
 {% extends "app/base.html" %}
 {% block title %}Créer une critique{% endblock %}
 {% block content %}
-    <h1>Créer une critique</h1>
-    <form action="{% url "create_review" %}" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div>
+    <article>
+        <h1>Créer une critique</h1>
+        <form action="{% url "create_review" %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
             <fieldset class="border-rounded ticket-form">
                 <legend>Livre / Article</legend>
                 {% include "app/posts/ticket_form_fields.html" %}
@@ -13,9 +13,9 @@
                 <legend>Critique</legend>
                 {% include "app/posts/review_form_fields.html" %}
             </fieldset>
-        </div>
-        <p class="commands">
-            <button type="submit" name="action" value="validate_review">Envoyer</button>
-        </p>
-    </form>
+            <p class="commands">
+                <button type="submit" name="action" value="validate_review">Envoyer</button>
+            </p>
+        </form>
+    </article>
 {% endblock %}

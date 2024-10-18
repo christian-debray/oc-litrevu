@@ -2,11 +2,13 @@
 {% block title %}{% if usecase == "update" %}Editer{% else %}Créer{% endif %} un ticket{% endblock %}
 {% block content %}
     <h1>{% if usecase == "update" %}Editer{% else %}Créer{% endif %} un ticket</h1>
-    <form action="{{ edit_url }}" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% include "app/posts/ticket_form_fields.html" %}
-        <p class="commands">
-            <button type="submit" name="action" value="edit_ticket">Envoyer</button>
-        </p>
-    </form>
+    <article class="border-rounded">
+        <form action="{{ edit_url }}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% include "app/posts/ticket_form_fields.html" %}
+            <p class="commands">
+                <button type="submit" name="action" value="edit_ticket">Envoyer</button>
+            </p>
+        </form>
+    </article>
 {% endblock %}

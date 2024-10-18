@@ -1,18 +1,23 @@
 {% extends "app/base.html" %}
 {% block title %}{% if usecase == "update" %}Modifier{% else %}Créer{% endif %} une critique{% endblock %}
 {% block content %}
-    <h1>{% if usecase == "update" %}Modifier{% else %}Créer{% endif %} une critique</h1>
-    <div class="card">
-        <p><em>Vous êtes en train de poster en réponse à</em></p>
-        {% include "app/components/ticket_request_view.html" %}
-    </div>
-    <form action="{{ edit_url }}" method="POST" class="review-form">
-        <h3>Critique</h3>
-        {% csrf_token %}
-        {% include "app/posts/review_form_fields.html" %}
-        <p class="commands">
-            <button type="submit" name="action" value="validate_review">Envoyer</button>
-        </p>
-    </form>
-
+    <article>
+        <h1>{% if usecase == "update" %}Modifier{% else %}Créer{% endif %} une critique</h1>
+        <section>
+            <p><em>Vous êtes en train de poster en réponse à</em></p>
+            <div class="card box-medium">
+                {% include "app/components/ticket_request_view.html" %}
+            </div>
+        </section>
+        <article class="border-rounded">
+            <form action="{{ edit_url }}" method="POST" class="review-form">
+                <h3>Critique</h3>
+                {% csrf_token %}
+                {% include "app/posts/review_form_fields.html" %}
+                <p class="commands">
+                    <button type="submit" name="action" value="validate_review">Envoyer</button>
+                </p>
+            </form>
+        </article>
+    </article>
 {% endblock %}

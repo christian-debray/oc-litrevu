@@ -3,7 +3,7 @@
 {% block content %}
 
 <h1>Suivre d'autres utilisateurs</h1>
-<div>
+<article>
     <form action="{%url "add_subscription" %}" method="POST">
         {% csrf_token %}
         <div class="field box-medium">
@@ -15,21 +15,22 @@
             </p>
         </div>
     </form>
-</div>
-<div>
+</article>
+<article>
     <h2>Abonnements</h2>
     <ul class="list-as-cells" id="subscriptions_list_following">
     {% for u in following %}
         <li><span>{{u.display_name}}</span> <a href="{% url 'cancel_subscription' u.pk %}">désabonner</a></li>
     {% endfor %}
     </ul>
-<div>
+</article>
+<article>
     <h2>Abonnés</h2>
     <ul class="list-as-cells" id="subscriptions_list_followers">
         {% for u in followers %}
             <li><span>{{u.display_name}}</span></li>
         {% endfor %}
     </ul>
-</div>
+</article>
 
 {% endblock %}
