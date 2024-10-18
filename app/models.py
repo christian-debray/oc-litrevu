@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from abc import abstractmethod
 from django.utils.translation import gettext_lazy as _
+from itertools import chain
 import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -85,8 +86,13 @@ class UserManager(models.Manager):
         return self.get_queryset().filter(user__followed_by__user_id=user.pk)
 
     def own_or_followed(self, user: User):
-        """Filter: Union of followed_by_user and from_user filters."""
-        return self.own(user) | self.followed(user)
+        """Filter: Instances posted by user or followed by user."""
+        # TODO
+        # This will perform one additionnal query
+        # Find how to factorize both queries o and q
+        o = self.own(user)
+        f = self.followed(user)
+        return chain(o, f)
 
 
 class TicketUserManager(UserManager):

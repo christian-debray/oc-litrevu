@@ -8,7 +8,7 @@
         {% if review.is_author %}
             <p>Vous avez posté une critique</p>
         {% else %}
-            <p>{{review.author_name}} a posté une critique</p>
+            <p>{{review.user.display_name}} a posté une critique</p>
         {% endif %}
     </section>
     <h3>{{review.headline}} <rating-widget aria-label="note : {{review.rating}} sur 5" data-rating="{{review.rating}}" data-max-rating="5">{{review.rating}}/5</rating-widget></h3>
