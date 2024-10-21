@@ -5,9 +5,6 @@ from django.utils.translation import gettext as _
 from django.contrib.auth import login, authenticate, logout as django_logout, password_validation
 from .forms import AuthForm, RegisterForm
 from django.db import IntegrityError
-import logging
-
-logger = logging.getLogger()
 
 
 def register(request: HttpRequest):
@@ -69,10 +66,8 @@ def _redirect_after_authentication(request: HttpRequest) -> HttpResponse:
     falls back to "index" otherwise.
     """
     redirect_url = _redirect_url(request)
-    logger.debug(f"Redirect after login: next = {redirect_url}")
     if not redirect_url:
         redirect_url = "index"
-    logger.debug(f"Redirect to {redirect_url}...")
     return redirect(redirect_url)
 
 

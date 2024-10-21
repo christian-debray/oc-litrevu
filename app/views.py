@@ -1,7 +1,8 @@
 from itertools import chain
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpRequest, HttpResponse
-from .models import User, Ticket, Review
+from django.http import HttpRequest, HttpResponse, Http404
+from .models import User, Ticket, Review, PostEntry
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django import urls
@@ -11,10 +12,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from . import subscriptions as subscription_tools
 from . import posts as post_tools
 from . import helpers
-import logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -30,7 +27,6 @@ def index(request: HttpRequest) -> HttpResponse:
 @login_required
 def feed(request: HttpRequest) -> HttpResponse:
     """Display the user's feed"""
-    logger.debug("Feed")
     tickets = [
         post_tools.prepare_post_entry(
             post_obj=x, request=request, with_commands=["review"]
@@ -191,9 +187,12 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
     """Creates a review in reply to a ticket.
     Ticket must be visible in the user's feed, otherwise the view will raise a 404.
     """
-    ticket_instance = get_object_or_404(
-        Ticket.with_user_manager.own_or_followed(request.user), pk=ticket_id
-    )
+    ticket_instance = Ticket.with_user_manager.own_or_followed(request.user, filters=Q(pk=ticket_id)).first()
+    if not ticket_instance:
+        raise Http404()
+    post_instance = PostEntry(ticket_instance, user=request.user)
+    if not post_instance.can_edit:
+        raise Http404()
     review_instance = Review(ticket=ticket_instance, user=request.user)
     return _edit_or_create_review(
         request=request,

@@ -6,9 +6,6 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from abc import abstractmethod
 from django.utils.translation import gettext_lazy as _
-import logging
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
 
 
 class User(AbstractUser):
@@ -84,9 +81,16 @@ class UserManager(models.Manager):
         """Filter: Instances followed by user."""
         return self.get_queryset().filter(user__followed_by__user_id=user.pk)
 
-    def own_or_followed(self, user: User):
+    def own_or_followed(self, user: User, filters=None):
         """Filter: Instances posted by user or followed by user."""
-        return self.own(user).union(self.followed(user))
+        if filters:
+            return (
+                self.own(user)
+                .filter(filters)
+                .union(self.followed(user).filter(filters))
+            )
+        else:
+            return self.own(user).union(self.followed(user))
 
 
 class TicketUserManager(UserManager):
@@ -121,14 +125,24 @@ class ReviewUserManager(UserManager):
         )
 
     def to_own_tickets(self, user: User):
-        """Returns reviews related to user's tickets.
-        """
+        """Returns reviews related to user's tickets."""
         return self.get_queryset().filter(ticket__user_id=user.pk)
 
-    def own_or_followed(self, user: User):
-        """Filter: Instances posted by user or followed by user. Also include all reviews to own's tickets.
-        """
-        return self.own(user).union(self.to_own_tickets(user)).union(self.followed(user))
+    def own_or_followed(self, user: User, filters=None):
+        """Filter: Instances posted by user or followed by user. Also include all reviews to own's tickets."""
+        if filters:
+            return (
+                self.own(user)
+                .filter(filters)
+                .union(self.to_own_tickets(user).filter(filters))
+                .union(self.followed(user).filter(filters))
+            )
+        else:
+            return (
+                self.own(user)
+                .union(self.to_own_tickets(user))
+                .union(self.followed(user))
+            )
 
 
 class Ticket(AbstractPostEntry):
@@ -138,11 +152,14 @@ class Ticket(AbstractPostEntry):
     with_user_manager = TicketUserManager()
 
     title = models.CharField(verbose_name=_("title"), max_length=128)
-    description = models.TextField(verbose_name=_("description"), max_length=2048, blank=True)
+    description = models.TextField(
+        verbose_name=_("description"), max_length=2048, blank=True
+    )
     image = models.ImageField(
         null=True,
         verbose_name=_("image"),
-        blank=True, upload_to="uploads/tickets/%Y/%m/%d/"
+        blank=True,
+        upload_to="uploads/tickets/%Y/%m/%d/",
     )
 
     class Meta:
@@ -196,7 +213,7 @@ class Review(AbstractPostEntry):
     rating = models.PositiveSmallIntegerField(
         verbose_name=_("rating"),
         # validates that rating must be between 0 and 5
-        validators=[MinValueValidator(0), MaxValueValidator(5)]
+        validators=[MinValueValidator(0), MaxValueValidator(5)],
     )
     headline = models.CharField(verbose_name=_("headline"), max_length=128)
     body = models.TextField(verbose_name=_("body"), max_length=8192, blank=True)
@@ -247,9 +264,7 @@ class PostEntry:
         self._visiting_user = user
         self._edit_url = None
         self._delete_url = None
-        logger.debug(f"Create PostEntry on top of {model_instance.content_type} {model_instance}:")
         if model_instance.content_type == "REVIEW":
-            logger.debug(f"  => Bind related ticket {model_instance.ticket}")
             self._ticket = PostEntry(model_instance.ticket, user)
         else:
             self._ticket = None
@@ -345,10 +360,7 @@ class PostEntry:
         - "options": (dict)
         """
         if not self.is_command_allowed(cmd_name):
-            logger.debug(f"{cmd_name} is not allowed in {self}")
             return
-        else:
-            logger.debug(f"Set command {cmd_name} in {self}")
         cmd_defaults = {}
         cmd_name = cmd_name.lower()
         match (cmd_name):
