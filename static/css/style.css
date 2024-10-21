@@ -89,7 +89,12 @@ summary,
     --color_text--link-alt: #036592;
     --color_text--light: #f0f0f0;
     --color_text--accent: var(--color_text--link);
-    --color_text--error: #a20f00;
+    --color_text--error:#860c00;
+    --color_text--success: #005c1c;
+    --color_text--warning: #8e5409;
+    --color_background--error: #ffc5c2;
+    --color_background--success: #d2ffe0;
+    --color_background--warning: #fae5b3;
     --color_background--surface: white;
     --color_background--element: #f4f4f5;
     --color_background--chip: #e4e4e7;
@@ -306,6 +311,98 @@ input[type="reset"]:focus {
 }
 
 /* ==================== END: FORM ELEMENTS ======================= */
+
+/* ====================== SECTION: MESSAGES ====================== */
+    ul.messages {
+        padding: 1rem
+    }
+
+    .container#outer ul.messages {
+        margin: 0 0 1rem 0
+    }
+
+    .messages > li {
+        padding: 1rem;
+        border: solid 1px var(--color_border-light-alt);
+        border-radius: .5rem;
+        margin: 1rem 0;
+    }
+
+    .messages > li:before {
+        content: "!";
+        display: inline-block;
+        position: relative;
+        text-align: center;
+        border: none;
+        border-radius: 100%;
+        background-color: black;
+        color: white;
+        margin-right: 1em;
+        font-size: var(--font_size--normal);
+        width: 2cap;
+        font-family: var(--font_head);
+        font-weight: bold;
+    }
+
+    .container#outer .messages > :first-child {
+        margin-top: 0
+    }
+
+    .container#outer .messages > :last-child {
+        margin-bottom: 0
+    }
+
+    .messages > .error {
+        color: var(--color_text--error);
+        border-color: var(--color_text--error);
+        background-color: var(--color_background--error);
+    }
+
+    .messages > li.error:before {
+        content: "\2715";
+        background-color: var(--color_text--error);
+        color: var(--color_background--error);
+    }
+
+    .messages > .success {
+        color: var(--color_text--success);
+        border-color: var(--color_text--success);
+        background-color: var(--color_background--success);
+    }
+    
+    .messages > li.success:before {
+        content: "\2713";
+        color: var(--color_background--success);
+        background-color: var(--color_text--success);
+    }
+
+    .messages > .warning {
+        color: var(--color_text--warning);
+        border-color: var(--color_text--warning);
+        background-color: var(--color_background--warning);
+    }
+
+    .messages > li.warning:before {
+        content: "!";
+        background-color: var(--color_text--warning);
+        color: var(--color_background--warning);
+    }
+
+    .messages > .info {
+        color: var(--color_text--subtle);
+        border-color: var(--color_text--subtle);
+        background-color: var(--color_background--surface);
+    }
+
+    .messages > li.info:before {
+        content: "i";
+        background-color: var(--color_text--subtle);
+        color: var(--color_background--surface);
+        font-family: "Courrier New", monospace;
+        font-size: smaller
+    }
+
+/* ======================== END: MESSAGES ======================== */
 
 /* ================== SECTION: CUSTOM ELEMENTS =================== */
 rating-widget {

@@ -25,7 +25,12 @@
         </ul>
         {% endif %}
         <main>
-            {% block content %}{% endblock %}
+            {% block content %}
+            <article>
+                <h1>Yout content goes here</h1>
+                {% lorem %}
+            </article>
+            {% endblock %}
         </main>
     </div>
     <script id="component-loader"
