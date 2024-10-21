@@ -104,8 +104,8 @@ then run the local server, and go to: http://127.0.0.1:8000/admin
 
 # Configuration, testing and debugging
 
-Settings for Django are located in `litrevu/settings.py`.
+**Settings for Django** are located in `litrevu/settings.py`.
 
-The **Django debug toolbar** is already set up, a `DISPLAY_DEBUG_TOOLBAR` flag in settings.yml controls wether it should run.
+The **[Django debug toolbar](https://django-debug-toolbar.readthedocs.io/en/latest/)** is already set up, a `DISPLAY_DEBUG_TOOLBAR` flag in `settings.py` controls wether it should run.
 
-The app's unit tests are found in `app/tests.py`. The tests require the test fixtures found in `app/fixtures/tests.yaml`.
+The app's **unit tests** are found in `app/tests.py`. The tests require the test fixtures found in `app/fixtures/tests.yaml`.
