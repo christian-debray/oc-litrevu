@@ -1,6 +1,6 @@
 from django.test import TestCase
 from app.models import User, UserFollows, Ticket, Review
-from app.subscriptions import followed_users
+from app.subscriptions import followed_users, followers
 from django.db import models
 from itertools import chain
 
@@ -23,7 +23,25 @@ class UserFollowsTestCase(TestCase):
             self.assertListEqual(
                 follows,
                 test_data["follows"],
-                f"Resulst don't match for user #{user.pk} {user}, expected {test_data['follows']}, found {follows}"
+                f"Results don't match for user #{user.pk} {user}, expected {test_data['follows']}, found {follows}"
+            )
+
+    def test_followed_by(self):
+        """Finds who is followed by whom"""
+        expectations = [
+            {"user.pk": 2, "followed_by": [3, 5]},
+            {"user.pk": 3, "followed_by": [2, 5, 6]},
+            {"user.pk": 4, "followed_by": [2, 3, 5, 6]},
+            {"user.pk": 5, "followed_by": []},
+            {"user.pk": 6, "followed_by": [3, 5]},
+        ]
+        for test_data in expectations:
+            user = User.objects.get(pk=test_data["user.pk"])
+            followed_by = sorted([x.pk for x in followers(user)])
+            self.assertListEqual(
+                followed_by,
+                test_data["followed_by"],
+                f"Results don't match for user #{user.pk} {user}, expected {test_data['followed_by']}, found {followed_by}"
             )
 
 

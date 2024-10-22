@@ -73,24 +73,36 @@ class UserManager(models.Manager):
     Provides filters on Post Entry ownership, relation between a user and Post Entry author, etc...
     """
 
-    def own(self, user: User):
-        """Filter: Instances posted by user."""
-        return self.get_queryset().filter(user=user)
+    def get_queryset(self) -> models.QuerySet:
+        """Select related user data, defers most unused user fields."""
+        return (
+            super()
+            .get_queryset()
+            .select_related("user")
+            .defer(
+                "user__password",
+                "user__email",
+                "user__first_name",
+                "user__last_name",
+                "user__is_staff",
+                "user__is_active",
+                "user__date_joined",
+            )
+        )
 
-    def followed(self, user: User):
+    def own(self, user: User) -> models.QuerySet:
+        """Filter: Instances posted by user."""
+        return self.get_queryset().filter(user_id=user.pk)
+
+    def followed(self, user: User) -> models.QuerySet:
         """Filter: Instances followed by user."""
         return self.get_queryset().filter(user__followed_by__user_id=user.pk)
 
-    def own_or_followed(self, user: User, filters=None):
+    def own_or_followed(self, user: User) -> models.QuerySet:
         """Filter: Instances posted by user or followed by user."""
-        if filters:
-            return (
-                self.own(user)
-                .filter(filters)
-                .union(self.followed(user).filter(filters))
-            )
-        else:
-            return self.own(user).union(self.followed(user))
+        own = models.Q(user_id=user.pk)
+        followed = models.Q(user__followed_by__user_id=user.pk)
+        return self.filter(own | followed)
 
 
 class TicketUserManager(UserManager):
@@ -103,12 +115,8 @@ class TicketUserManager(UserManager):
     """
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("user")
-            .annotate(total_reviews=models.Count("review"))
-            .only("pk", "user_id", "title", "image", "description", "time_created")
+        return super().get_queryset().annotate(
+            total_reviews=models.Count("review")
         )
 
 
@@ -119,30 +127,24 @@ class ReviewUserManager(UserManager):
         return (
             super()
             .get_queryset()
-            .select_related("user")
             .select_related("ticket")
             .select_related("ticket__user")
         )
 
-    def to_own_tickets(self, user: User):
+    def to_own_tickets(self, user: User) -> models.QuerySet:
         """Returns reviews related to user's tickets."""
         return self.get_queryset().filter(ticket__user_id=user.pk)
 
-    def own_or_followed(self, user: User, filters=None):
+    def own_or_followed(self, user: User, filters=None) -> models.QuerySet:
         """Filter: Instances posted by user or followed by user. Also include all reviews to own's tickets."""
+        own = models.Q(user_id=user.pk)
+        followed = models.Q(user__followed_by__user_id=user.pk)
+        to_own_tickets = models.Q(ticket__user_id=user.pk)
+        q = self.filter(own | followed | to_own_tickets).distinct()
         if filters:
-            return (
-                self.own(user)
-                .filter(filters)
-                .union(self.to_own_tickets(user).filter(filters))
-                .union(self.followed(user).filter(filters))
-            )
+            return q.filter(filters)
         else:
-            return (
-                self.own(user)
-                .union(self.to_own_tickets(user))
-                .union(self.followed(user))
-            )
+            return q
 
 
 class Ticket(AbstractPostEntry):

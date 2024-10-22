@@ -1,24 +1,18 @@
 """Toolbox to follow / drop other users"""
 from .models import User, UserFollows
-from django.db.models import QuerySet, Q
-
-
-def followed_users_or_self(user: User) -> QuerySet[User]:
-    """Queries all users followed by user and includes user in the result set.
-    """
-    return User.objects.filter(Q(followed_by__in=UserFollows.objects.filter(user=user)) | Q(pk=user.pk))
+from django.db.models import QuerySet
 
 
 def followed_users(user: User) -> QuerySet[User]:
     """Query users followed by the current user.
     """
-    return User.objects.filter(followed_by__in=UserFollows.objects.filter(user=user))
+    return User.objects.filter(followed_by__user_id=user.pk)
 
 
 def followers(user: User) -> QuerySet[User]:
     """Query users following the current user.
     """
-    return User.objects.filter(following__in=UserFollows.objects.filter(followed_user=user))
+    return User.objects.filter(following__followed_user=user.pk)
 
 
 def subscribe_to_user(user: User, follow_username: str) -> User:
