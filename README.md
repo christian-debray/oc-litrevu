@@ -23,6 +23,27 @@ The app's database is powered by SQLite3 (shipped with Python by default).
 
 # Installation Steps
 
+## TL;DR
+
+    git clone git@github.com:christian-debray/oc-litrevu.git .
+
+    python -m venv env
+
+    source env/bin/activate
+
+    pip install -r requirements.txt
+
+    python manage.py migrate
+
+    python manage.py check
+
+    python manage.py test    
+
+    python manage.py loaddata --app app tests.yaml
+
+    python manage.py runserver
+
+
 ## 1. Get the codebase and the Python environment
 
 clone this repository:
