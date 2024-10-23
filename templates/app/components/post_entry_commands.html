@@ -6,7 +6,7 @@
             <form method="POST" action="{{cmd.url}}">
                 {% csrf_token %}
                 <input type="hidden" name="entry_id" value="{{post_entry.pk}}">
-                <button class="button" name="action" value="delete">Supprimer</button>
+                <button class="button" name="action" value="delete" data-confirm-text="Veuillez confirmer la suppression du post: {{post_entry.title|urlencode}}">Supprimer</button>
             </form>
         {% elif cmd.cmd_name == "review" %}
             <a href="{{cmd.url}}" class="button">Créer une critique</a>

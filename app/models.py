@@ -345,6 +345,16 @@ class PostEntry:
         """A list of commands available for this Post."""
         return list(self._commands.values())
 
+    @property
+    def title(self) -> str:
+        """The human readable title of the post entry."""
+        if self.instance.content_type == "REVIEW":
+            return self.headline
+        elif self.instance.content_type == "TICKET":
+            return self.instance.title
+        else:
+            return str(self.instance)
+
     def is_command_allowed(self, cmd_name):
         """Returns True if a command is available."""
         test_name = f"can_{cmd_name}"

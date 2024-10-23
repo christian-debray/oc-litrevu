@@ -123,6 +123,16 @@
         RatingWidget.stylesheetURL = loader.dataset.stylesheetUrl;
         customElements.define("star-icon", StarIcon);
         customElements.define("rating-widget", RatingWidget);
+        const buttons = document.querySelectorAll("button[data-confirm-text]")
+        buttons.forEach((x) => { x.addEventListener("click", (evt) => {
+            const confirmText = decodeURI(evt.target.dataset.confirmText)
+            if (confirm(confirmText)) {
+                return true;
+            } else {
+                evt.preventDefault();
+                return false;
+            }
+        })})
     }
 
     document.addEventListener('DOMContentLoaded', initComponents);
