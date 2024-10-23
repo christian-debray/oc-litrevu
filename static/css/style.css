@@ -468,6 +468,7 @@ article > h3:first-child {
         justify-content: center;
         background-color: var(--color_theme--dark);
         color: var(--color_text--light);
+        background: scroll linear-gradient(177deg, var(--color_theme--dark), 60%, var(--color_text--default));
     }
 
     header a {
@@ -554,7 +555,7 @@ article > h3:first-child {
     body {
         background-color: var(--color_theme--light-alt);
         background-color: #e3e3e3;
-        background: linear-gradient(0deg, var(--color_theme--dark), 30%, var(--color_theme--light-alt));
+        background: linear-gradient(0deg, #c4beb3, 71%, #f2f2f2);
         background-attachment: fixed;
     }
     
