@@ -5,6 +5,16 @@ Openclassrooms Python Project 9
 
 A community book reviewing app
 
+**TABLE OF CONTENTS**
+
+ - [Dependencies and requirements](#dependencies-and-requirements)
+ - [Installation steps](#installation-steps)
+ - [Run the app locally](#run-the-app-locally)
+ - [Manage the app as superuser](#manage-the-app-as-superuser)
+ - [Clear the database](#clear-the-database)
+ - [Configuration, testing and debugging](#configuration-testing-and-debugging)
+
+
 # Dependencies and requirements
 
 This app requires [Python 3.10+](https://www.python.org/) and [Django 5.1](https://www.djangoproject.com/) (see installation notes below).
@@ -58,6 +68,8 @@ Once the initial migration is ready:
 
 ### 2.3 Optional: Load initial data from fixtures:
 
+_**Note**: All models must be empty before loading fixtures. See also [Clear the database](#clear-the-database)_
+
 If you wish to try the app with some pre-loaded data, you can load the fixtures provided in this repo:
 
 load from YAML file (requires PyYAML):
@@ -84,7 +96,7 @@ You can create a superuser account as well if you wish to use django's admin app
 
     python manage.py createsuperuser
 
-## 3. Run the app locally
+# Run the app locally
 
 Start django's local server from a terminal:
 
@@ -94,13 +106,21 @@ Start django's local server from a terminal:
 
 The app will be available at the address http://127.0.0.1:8000/litrevu/
 
-## 4. Manage the app as superuser
+# Manage the app as superuser
 
 If not already done, create a superadmin account:
 
     python manage.py createsuperuser
 
 then run the local server, and go to: http://127.0.0.1:8000/admin
+
+# Clear the database
+
+If you want to restore the database from fixtures, you must first clear the database before loading the fixtures.
+
+The **cleardata** command was added to *django-admin* to clear the models form the database, yet without changing its schema:
+
+    python manage.py cleardata
 
 # Configuration, testing and debugging
 
