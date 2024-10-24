@@ -2,6 +2,30 @@
 """
 
 from .models import Ticket, Review, User
+from django.db.models import QuerySet, Q, Count
+
+
+def own_or_followed_reviews(user: User) -> QuerySet[Review]:
+    """Finds reviews to display in a user's feed:
+    owned by user, followed by user, or posted in reply to a ticket owned by user.
+    """
+    own = Q(user_id=user.pk)
+    followed = Q(user__followed_by__user_id=user.pk)
+    to_own_tickets = Q(ticket__user_id=user.pk)
+    return (
+        Review.objects.select_related("user")
+        .select_related("ticket")
+        .select_related("ticket__user")
+        .filter(own | followed | to_own_tickets)
+        .distinct()
+    )
+
+
+def own_or_followed_tickets(user: User) -> QuerySet[Ticket]:
+    """Find tickets own ofr followed by user."""
+    followed = Q(user__followed_by__user_id=user.pk)
+    own = Q(user_id=user.pk)
+    return Ticket.objects.select_related("user").filter(followed | own).annotate(total_reviews=Count("review"))
 
 
 def prepare_post_entry(entry: Review | Ticket, with_commands: list = None) -> dict:
@@ -17,7 +41,7 @@ def prepare_post_entry(entry: Review | Ticket, with_commands: list = None) -> di
     else:
         return {}
     if with_commands:
-        entry_dict['commands'] = []
+        entry_dict["commands"] = []
         for cmd in with_commands:
             args = {"cmd_name": cmd} if isinstance(cmd, str) else cmd
             entry_dict["commands"].append(make_command(entry, **args))

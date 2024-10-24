@@ -26,8 +26,6 @@
     </div>
     {% if ticket.commands and not nested %}
         {% include "app/components/post_entry_commands.html" with post_entry=ticket %}
-    {% else %}
-        (no commands)
     {% endif %}
     </article>
 {% endautoescape %}
