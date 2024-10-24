@@ -1,48 +1,81 @@
 """Helpers to display posts entries in feeds
 """
 
-from .models import Ticket, Review, PostEntry
-from django.http import HttpRequest
+from .models import Ticket, Review, User
 
 
-def prepare_post_entry(
-    post_obj: Review | Ticket,
-    request: HttpRequest,
-    with_commands: list = None
-) -> PostEntry:
-    """Helper to convert a Review or Ticket instance into a PostEntry proxy object (see models).
+def prepare_post_entry(entry: Review | Ticket, with_commands: list = None) -> dict:
+    """Serialize a Review or Ticket as a dictionnary. Related objects are serialized as well.
 
-    Use it if you need to control the urls to edit and delete a Post Entry.
-
-    params:
-        - post_obj: a Review or Ticket instance
-        - request: the current request object.
-            This function will use request.user to produce a PostEntry instance
-            and will aslo read the current query string if a url transformation is required (see below)
-        - with_commands: True if edit_url and delete_url are needed.
-            False will set both urls to None.
-        - next_url: if set, transforms the instance' edit_url and delete_url by adding a "next" query parameter,
-            to help control execution flow and redirections after a successful command.
-
-    To set commands on a post entry, pass a dictionnary with the with_commands parameter.
-    Note: The entry's ID is implicit and is not required in the command options.
-
-    commands param example :
-    commands = [
-        # pass a dict to set edit command with custom parameters:
-        {'cmd_name': 'edit', 'cmd_url': "url/path/to/cmd", 'method': "GET", 'options': {'foo': 42, 'bar': "yellow"}},
-        # apply defaults:
-        {'cmd_name: 'review'},
-        # just pass a string to set delete command with default parameters:
-        "delete", # use the object default parameters
-    ]
+    Optionnaly set commands allowed for this entry.
     """
-    entry = PostEntry(post_obj, request.user)
-    if with_commands and len(with_commands):
+    entry_dict = {}
+    if entry.content_type == "TICKET":
+        entry_dict = ticket_dict(entry)
+    elif entry.content_type == "REVIEW":
+        entry_dict = review_dict(entry)
+    else:
+        return {}
+    if with_commands:
+        entry_dict['commands'] = []
         for cmd in with_commands:
-            if isinstance(cmd, str):
-                args = {"cmd_name": cmd}
-            else:
-                args = cmd
-            entry.set_command(**args)
-    return entry
+            args = {"cmd_name": cmd} if isinstance(cmd, str) else cmd
+            entry_dict["commands"].append(make_command(entry, **args))
+    return entry_dict
+
+
+def make_command(entry, cmd_name: str, **kwargs):
+    """Sets the parameters for a command on this object, if the command is allowed.
+
+    This method applies default options for each command.
+    Command defaults can be overriden with the kwargs.
+
+    Usual command options:
+    - "url": (str)
+    - "method": (str) "POST" or "GET"
+    - "options": (dict)
+    """
+    cmd_defaults = {}
+    cmd_name = cmd_name.lower()
+    match (cmd_name):
+        case "edit":
+            cmd_defaults = {"url": entry.edit_url, "method": "GET", "options": {}}
+        case "delete":
+            cmd_defaults = {"url": entry.delete_url, "method": "POST", "options": {}}
+        case "review":
+            cmd_defaults = {"url": entry.review_url, "method": "GET", "options": {}}
+
+    return {"cmd_name": cmd_name} | cmd_defaults | kwargs
+
+
+def user_dict(obj: User) -> dict:
+    return {
+        "id": obj.pk,
+        "username": obj.username,
+    }
+
+
+def ticket_dict(obj: Ticket) -> dict:
+    return {
+        "id": obj.pk,
+        "content_type": obj.content_type,
+        "user": user_dict(obj.user),
+        "title": obj.title,
+        "description": obj.description,
+        "image": obj.image,
+        "time_created": obj.time_created,
+    }
+
+
+def review_dict(obj: Review) -> dict:
+    return {
+        "content_type": obj.content_type,
+        "user": user_dict(obj.user),
+        "id": obj.pk,
+        "rating": obj.rating,
+        "title": obj.headline,
+        "headline": obj.headline,
+        "body": obj.body,
+        "time_created": obj.time_created,
+        "ticket": ticket_dict(obj.ticket),
+    }

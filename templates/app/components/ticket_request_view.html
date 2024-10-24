@@ -24,8 +24,10 @@
             <img alt="{{ticket.title}}" src="{{ ticket.image.url }}">
         {% endif %}
     </div>
-    {% if ticket.commands %}
+    {% if ticket.commands and not nested %}
         {% include "app/components/post_entry_commands.html" with post_entry=ticket %}
+    {% else %}
+        (no commands)
     {% endif %}
     </article>
 {% endautoescape %}

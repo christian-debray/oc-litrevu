@@ -195,7 +195,7 @@ MEDIA_ROOT = Path(BASE_DIR, "media/").resolve()
 MEDIA_URL = "/media/"
 
 # Django Debug Toolbar
-DISPLAY_DEBUG_TOOLBAR = False
+DISPLAY_DEBUG_TOOLBAR = True
 if DISPLAY_DEBUG_TOOLBAR:
     INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')

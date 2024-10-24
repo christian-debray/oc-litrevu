@@ -58,7 +58,7 @@ class UserAwareManager(models.Manager):
         """Filter: Instances followed by user."""
         return self.get_queryset().filter(self._followed_Q(user))
 
-    def own_or_followed(self, user: User) -> models.QuerySet:
+    def own_or_followed(self, user: User) -> models.QuerySet['Ticket']:
         """Filter: Instances posted by user or followed by user."""
         own = models.Q(user_id=user.pk)
         return self.filter(own | self._followed_Q(user))
@@ -188,6 +188,10 @@ class Ticket(AbstractPostEntry):
         self._total_reviews = value
 
     @property
+    def can_review(self) -> bool:
+        return self.total_reviews == 0
+
+    @property
     def review_url(self) -> str:
         return reverse("review_for_ticket", kwargs={"ticket_id": self.pk})
 
@@ -248,138 +252,3 @@ class UserFollows(models.Model):
         # ensures we don't get multiple UserFollows instances
         # for unique user-user_followed pairs
         unique_together = ("user", "followed_user")
-
-
-class PostEntry:
-    """Proxy object to display tickets and reviews."""
-
-    def __init__(self, model_instance: AbstractPostEntry, user: User):
-        self.instance: AbstractPostEntry = model_instance
-        self._visiting_user = user
-        self._edit_url = None
-        self._delete_url = None
-        if model_instance.content_type == "REVIEW":
-            self._ticket = PostEntry(model_instance.ticket, user)
-        else:
-            self._ticket = None
-        self._commands: dict[dict] = {}
-
-    def __getattr__(self, name: str):
-        return getattr(self.instance, name)
-
-    @property
-    def ticket(self) -> "PostEntry":
-        return self._ticket
-
-    @property
-    def content_type(self) -> str:
-        """A string representing the entry's type: REVIEW or TICKET."""
-        return self.instance.content_type
-
-    @property
-    def delete_url(self):
-        """The URL where the current user can edit this entry,
-        or None if the current user can't edit the entry.
-        """
-        if self.can_delete:
-            return self._delete_url or self.instance.delete_url
-        else:
-            return None
-
-    @delete_url.setter
-    def delete_url(self, val):
-        if self.can_delete:
-            self._delete_url = val
-
-    @property
-    def edit_url(self):
-        """The URL where the current user can edit this entry,
-        or None if the current user can't edit the entry.
-        """
-        if self.can_edit:
-            return self._edit_url or self.instance.edit_url
-        else:
-            return None
-
-    @edit_url.setter
-    def edit_url(self, val):
-        if self.can_edit:
-            self._edit_url = val
-
-    @property
-    def can_edit(self) -> bool:
-        """True if the current user can edit this entry."""
-        return self.is_author
-
-    @property
-    def can_delete(self) -> bool:
-        """True if the current user can delete this entry."""
-        return self.is_author
-
-    @property
-    def can_review(self) -> bool:
-        """True if the current user can create a review for this entry."""
-        if self.content_type != "TICKET":
-            return False
-        else:
-            return self.instance.total_reviews == 0
-
-    @property
-    def is_author(self) -> bool:
-        """True if the current user is the author of this entry."""
-        return self.instance.author_id == self._visiting_user.pk
-
-    @property
-    def commands(self) -> list[dict]:
-        """A list of commands available for this Post."""
-        return list(self._commands.values())
-
-    @property
-    def title(self) -> str:
-        """The human readable title of the post entry."""
-        if self.instance.content_type == "REVIEW":
-            return self.headline
-        elif self.instance.content_type == "TICKET":
-            return self.instance.title
-        else:
-            return str(self.instance)
-
-    def is_command_allowed(self, cmd_name):
-        """Returns True if a command is available."""
-        test_name = f"can_{cmd_name}"
-        try:
-            return getattr(self, test_name)
-        except AttributeError:
-            return False
-
-    def set_command(self, cmd_name: str, **kwargs):
-        """Sets the parameters for a command on this object, if the command is allowed.
-
-        This method applies default options for each command.
-        Command defaults can be overriden with the kwargs.
-
-        Usual command options:
-        - "url": (str)
-        - "method": (str) "POST" or "GET"
-        - "options": (dict)
-        """
-        if not self.is_command_allowed(cmd_name):
-            return
-        cmd_defaults = {}
-        cmd_name = cmd_name.lower()
-        match (cmd_name):
-            case "edit":
-                cmd_defaults = {"url": self.edit_url, "method": "GET", "options": {}}
-            case "delete":
-                cmd_defaults = {"url": self.delete_url, "method": "POST", "options": {}}
-            case "review":
-                cmd_defaults = {"url": self.review_url, "method": "GET", "options": {}}
-
-        self._commands[cmd_name] = {"cmd_name": cmd_name} | cmd_defaults | kwargs
-
-    def unset_command(self, cmd_name: str):
-        """Removes a command from this object."""
-        del self._commands[cmd_name]
-
-    def __str__(self) -> str:
-        return f"(PostEntry) {self.content_type} #{self.instance.pk} {self.instance}"
