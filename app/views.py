@@ -51,9 +51,9 @@ def subscriptions(request: HttpRequest) -> forms.SubscribeToUserForm:
     else:
         subscribe_form = forms.SubscribeToUserForm()
     following = subscription_tools.followed_users(request.user).values(
-        "pk", "display_name"
+        "pk", "username"
     )
-    followers = subscription_tools.followers(request.user).values("pk", "display_name")
+    followers = subscription_tools.followers(request.user).values("pk", "username")
     context = {
         "subscribe_form": subscribe_form,
         "following": following,
@@ -73,7 +73,7 @@ def _handle_subscription_form(request: HttpRequest):
                 request.user, follow_username
             )
             success_msg = _("You are now following %(username)s") % {
-                "username": followed.display_name
+                "username": followed.username
             }
             messages.success(request, success_msg)
         except ObjectDoesNotExist:
@@ -89,7 +89,7 @@ def _handle_subscription_form(request: HttpRequest):
 def subscription_cancel(request: HttpRequest, followed_user_id: int) -> HttpResponse:
     """Cancel subscription to another user's posts."""
     try:
-        followed_username = User.objects.get(pk=followed_user_id).display_name
+        followed_username = User.objects.get(pk=followed_user_id).username
         if subscription_tools.cancel_subscription(
             request.user, followed_user_id=followed_user_id
         ):

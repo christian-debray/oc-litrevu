@@ -8,8 +8,7 @@ from django.http import HttpRequest
 def prepare_post_entry(
     post_obj: Review | Ticket,
     request: HttpRequest,
-    with_commands: list = None,
-    next_url: str = None,
+    with_commands: list = None
 ) -> PostEntry:
     """Helper to convert a Review or Ticket instance into a PostEntry proxy object (see models).
 

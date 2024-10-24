@@ -40,6 +40,12 @@ class RegisterForm(forms.ModelForm):
         widget=forms.PasswordInput(render_value=False),
     )
 
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username__iexact=username).exists():
+            self.add_error("username", _("A user with this username already exists."))
+        return username
+
     def clean_password(self):
         """Validate a password: see AUTH_PASSWORD_VALIDATORS in settings.py
         """
