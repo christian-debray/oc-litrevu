@@ -13,7 +13,6 @@
     is_staff: true
     is_active: true
     date_joined: 2024-10-11 22:39:58.055858+00:00
-    display_name: admin
     groups: []
     user_permissions: []
 - model: app.user
@@ -23,14 +22,13 @@
     password: pbkdf2_sha256$870000$UxYYMRXhprjmHs6oZtt30M$STG9a8pn+7ETQkJ94sCGpoxciZHqc6syE7q4chEgLlA=
     last_login: 2024-10-11 22:45:22.382904+00:00
     is_superuser: false
-    username: alix
+    username: Alix
     first_name: ''
     last_name: ''
     email: ''
     is_staff: false
     is_active: true
     date_joined: 2024-10-11 22:45:22.121659+00:00
-    display_name: Alix
     groups: []
     user_permissions: []
 - model: app.user
@@ -40,14 +38,13 @@
     password: pbkdf2_sha256$870000$WpAP7ehitWbAtmkWKQOkM5$rDsphRDrkMov73pe0C3MBYe3dKgcOQbKryX+oRVJt7w=
     last_login: 2024-10-11 22:47:01.832520+00:00
     is_superuser: false
-    username: toto_23
+    username: Toto_23
     first_name: ''
     last_name: ''
     email: ''
     is_staff: false
     is_active: true
     date_joined: 2024-10-11 22:47:01.559868+00:00
-    display_name: Toto_23
     groups: []
     user_permissions: []
 - model: app.user
@@ -57,14 +54,13 @@
     password: pbkdf2_sha256$870000$1bsZ03jMZPZ4SLYqz8CPTF$kfZh/AApiJdOr4WIdGybYC9xLMOcL3xVgXE9AueHEC4=
     last_login: 2024-10-11 22:48:33.914225+00:00
     is_superuser: false
-    username: reviewservice
+    username: ReviewService
     first_name: ''
     last_name: ''
     email: ''
     is_staff: false
     is_active: true
     date_joined: 2024-10-11 22:48:33.648357+00:00
-    display_name: ReviewService
     groups: []
     user_permissions: []
 - model: app.user
@@ -74,14 +70,13 @@
     password: pbkdf2_sha256$870000$82RJId2VReHBuuXfBnC7Qz$1ZB9FKsyyxdzcK8Xx+LNypivEIW6DPHeMRiM5mTZO6M=
     last_login: 2024-10-11 22:49:20.845268+00:00
     is_superuser: false
-    username: observer
+    username: ObservEr
     first_name: ''
     last_name: ''
     email: ''
     is_staff: false
     is_active: true
     date_joined: 2024-10-11 22:49:20.570971+00:00
-    display_name: ObservEr
     groups: []
     user_permissions: []
 - model: app.user
@@ -91,14 +86,13 @@
     password: pbkdf2_sha256$870000$MC33egdQ2jHJaAjlhbVKEW$E3v+uC1DqTFWJrNuzzTz72HChSQhcgm8l8/fAEGsAiM=
     last_login: 2024-10-11 23:19:20.441538+00:00
     is_superuser: false
-    username: bob
+    username: Bob
     first_name: ''
     last_name: ''
     email: ''
     is_staff: false
     is_active: true
     date_joined: 2024-10-11 23:19:20.177081+00:00
-    display_name: Bob
     groups: []
     user_permissions: []
 # UserFollows relationships

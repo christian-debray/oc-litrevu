@@ -1,7 +1,7 @@
 from itertools import chain
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponse, Http404
-from .models import User, Ticket, Review, PostEntry
+from .models import User, Ticket, Review
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django import urls
@@ -26,18 +26,16 @@ def index(request: HttpRequest) -> HttpResponse:
 @login_required
 def feed(request: HttpRequest) -> HttpResponse:
     """Display the user's feed"""
-    tickets = [
-        post_tools.prepare_post_entry(
-            post_obj=x, request=request, with_commands=["review"]
-        )
-        for x in Ticket.with_user_manager.own_or_followed(request.user)
-    ]
+    tickets = []
+    for t in post_tools.own_or_followed_tickets(request.user):
+        cmd = ["review"] if t.can_review else None
+        tickets.append(post_tools.prepare_post_entry(t, cmd))
     reviews = [
-        post_tools.prepare_post_entry(post_obj=x, request=request)
-        for x in Review.with_user_manager.own_or_followed(request.user)
+        post_tools.prepare_post_entry(x)
+        for x in post_tools.own_or_followed_reviews(request.user)
     ]
     entries = sorted(
-        chain(tickets, reviews), key=lambda x: x.time_created, reverse=True
+        chain(tickets, reviews), key=lambda x: x.get("time_created"), reverse=True
     )
     context = {"feed_entries": entries}
     return render(request, "app/feed/feed.html", context)
@@ -50,10 +48,8 @@ def subscriptions(request: HttpRequest) -> forms.SubscribeToUserForm:
         subscribe_form = _handle_subscription_form(request)
     else:
         subscribe_form = forms.SubscribeToUserForm()
-    following = subscription_tools.followed_users(request.user).values(
-        "pk", "display_name"
-    )
-    followers = subscription_tools.followers(request.user).values("pk", "display_name")
+    following = subscription_tools.followed_users(request.user).values("pk", "username")
+    followers = subscription_tools.followers(request.user).values("pk", "username")
     context = {
         "subscribe_form": subscribe_form,
         "following": following,
@@ -73,7 +69,7 @@ def _handle_subscription_form(request: HttpRequest):
                 request.user, follow_username
             )
             success_msg = _("You are now following %(username)s") % {
-                "username": followed.display_name
+                "username": followed.username
             }
             messages.success(request, success_msg)
         except ObjectDoesNotExist:
@@ -89,7 +85,7 @@ def _handle_subscription_form(request: HttpRequest):
 def subscription_cancel(request: HttpRequest, followed_user_id: int) -> HttpResponse:
     """Cancel subscription to another user's posts."""
     try:
-        followed_username = User.objects.get(pk=followed_user_id).display_name
+        followed_username = User.objects.get(pk=followed_user_id).username
         if subscription_tools.cancel_subscription(
             request.user, followed_user_id=followed_user_id
         ):
@@ -186,9 +182,10 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
     """Creates a review in reply to a ticket.
     Ticket must be visible in the user's feed, otherwise the view will raise a 404.
     """
-    ticket_instance = get_object_or_404(Ticket.with_user_manager.own_or_followed(request.user), pk=ticket_id)
-    post_instance = PostEntry(ticket_instance, user=request.user)
-    if not post_instance.can_review:
+    ticket_instance = get_object_or_404(
+        post_tools.own_or_followed_tickets(request.user), pk=ticket_id
+    )
+    if not ticket_instance.can_review:
         raise Http404()
     review_instance = Review(ticket=ticket_instance, user=request.user)
     return _edit_or_create_review(
@@ -204,13 +201,13 @@ def review_for_ticket(request: HttpRequest, ticket_id: int):
 @login_required
 def edit_review(request: HttpRequest, review_id: int):
     """Updates an existing review."""
-    review_instance = get_object_or_404(
-        Review.with_user_manager, pk=review_id, user=request.user
-    )
+    review_instance = get_object_or_404(Review, pk=review_id, user=request.user)
     return _edit_or_create_review(
         request=request,
         usecase="update",
-        ticket_instance=Ticket.with_user_manager.get(pk=review_instance.ticket_id),
+        ticket_instance=Ticket.objects.select_related("user").get(
+            pk=review_instance.ticket_id
+        ),
         review_instance=review_instance,
         success_msg_tpl=_("Updated your review in reply to ticket #%(ticket_id)d"),
         edit_url=urls.reverse("edit_review", kwargs={"review_id": review_id}),
@@ -294,20 +291,31 @@ def delete_review(request: HttpRequest, review_id: int):
 @login_required
 def posts(request: HttpRequest) -> HttpResponse:
     """Display all reviews and tickets posted by a user."""
-    tickets = Ticket.with_user_manager.own(request.user)
-    reviews = Review.with_user_manager.own(request.user)
+    tickets = Ticket.objects.select_related("user").filter(user=request.user)
+    reviews = (
+        Review.objects.select_related("user")
+        .select_related("ticket")
+        .select_related("ticket__user")
+        .filter(user=request.user)
+    )
     posts = sorted(
         [
             post_tools.prepare_post_entry(
-                post_obj=x,
-                request=request,
+                entry=x,
                 with_commands=[
-                    {"cmd_name": "edit", "url": helpers.add_next_url(x.edit_url, request, "posts")},
-                    {"cmd_name": "delete", "url": helpers.add_next_url(x.delete_url, request, "posts")}
-                ])
+                    {
+                        "cmd_name": "edit",
+                        "url": helpers.add_next_url(x.edit_url, request, "posts"),
+                    },
+                    {
+                        "cmd_name": "delete",
+                        "url": helpers.add_next_url(x.delete_url, request, "posts"),
+                    },
+                ],
+            )
             for x in chain(tickets, reviews)
         ],
-        key=lambda x: x.time_created,
+        key=lambda x: x.get("time_created"),
         reverse=True,
     )
     context = {"posts": posts}

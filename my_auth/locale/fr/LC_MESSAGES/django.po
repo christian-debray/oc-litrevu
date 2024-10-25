@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-11 14:25+0000\n"
+"POT-Creation-Date: 2024-10-24 12:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,15 +18,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: forms.py:44
+#: forms.py:46
+msgid "A user with this username already exists."
+msgstr "Cet utilisateur existe déjà."
+
+#: forms.py:54
 msgid "Missing or invalid password"
 msgstr "Mot de passe manquant ou invalide."
 
-#: forms.py:47
+#: forms.py:57
 msgid "Missing or invalid username"
 msgstr "Nom d'utilisateur manquant ou invalide."
 
-#: forms.py:54
+#: forms.py:64
 msgid "Password and password confirmation must match."
 msgstr "Le mot de passe n'a pas été correctement confirmé."
 
@@ -92,6 +96,6 @@ msgstr "caractères spéciaux"
 msgid "containing"
 msgstr "contenant"
 
-#: views.py:50
+#: views.py:48
 msgid "Wrong login"
 msgstr "Erreur de login"

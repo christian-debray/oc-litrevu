@@ -5,13 +5,13 @@
     {% endif %}
     <section class="author-date" aria-label="author-date">
         {% if nested %}
-            <p>Ticket - {{ ticket.user.display_name }}</p>
+            <p>Ticket - {{ ticket.user.username }}</p>
         {% else %}
             <time>{{ticket.time_created}}</time>
             {% if ticket.is_author %}
                 <p>Vous avez demandé une critique</p>
             {% else %}
-                <p>{{ticket.user.display_name}} a demandé une critique</p>
+                <p>{{ticket.user.username}} a demandé une critique</p>
             {% endif %}
         {% endif %}
     </section>
@@ -24,7 +24,7 @@
             <img alt="{{ticket.title}}" src="{{ ticket.image.url }}">
         {% endif %}
     </div>
-    {% if ticket.commands %}
+    {% if ticket.commands and not nested %}
         {% include "app/components/post_entry_commands.html" with post_entry=ticket %}
     {% endif %}
     </article>

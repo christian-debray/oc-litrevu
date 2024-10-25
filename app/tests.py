@@ -1,5 +1,6 @@
 from django.test import TestCase
 from app.models import User, UserFollows, Ticket, Review
+from app.posts import own_or_followed_reviews, own_or_followed_tickets
 from app.subscriptions import followed_users, followers
 from django.db import models
 from itertools import chain
@@ -23,7 +24,7 @@ class UserFollowsTestCase(TestCase):
             self.assertListEqual(
                 follows,
                 test_data["follows"],
-                f"Results don't match for user #{user.pk} {user}, expected {test_data['follows']}, found {follows}"
+                f"Results don't match for user #{user.pk} {user}, expected {test_data['follows']}, found {follows}",
             )
 
     def test_followed_by(self):
@@ -41,7 +42,7 @@ class UserFollowsTestCase(TestCase):
             self.assertListEqual(
                 followed_by,
                 test_data["followed_by"],
-                f"Results don't match for user #{user.pk} {user}, expected {test_data['followed_by']}, found {followed_by}"
+                f"Results don't match for user #{user.pk} {user}, expected {test_data['followed_by']}, found {followed_by}",
             )
 
 
@@ -59,13 +60,13 @@ class TicketUserManagerTestCase(TestCase):
         ]
         for test_data in expectations:
             user = User.objects.get(pk=test_data["user.pk"])
-            tickets = Ticket.with_user_manager.own(user)
+            tickets = Ticket.objects.filter(user=user)
             self.assertIsInstance(tickets, models.QuerySet)
             ticket_ids = sorted([x.pk for x in tickets])
             self.assertListEqual(
                 ticket_ids,
                 test_data["tickets"],
-                f"Tickets don't match for user #{user.pk} {user}, expected {test_data['tickets']}, found {ticket_ids}"
+                f"Tickets don't match for user #{user.pk} {user}, expected {test_data['tickets']}, found {ticket_ids}",
             )
 
     def test_find_tickets_followed_by_user(self):
@@ -79,14 +80,14 @@ class TicketUserManagerTestCase(TestCase):
         ]
         for test_data in expectations:
             user = User.objects.get(pk=test_data["user.pk"])
-            tickets = Ticket.with_user_manager.own_or_followed(user)
+            tickets = own_or_followed_tickets(user)
             self.assertIsInstance(tickets, models.QuerySet)
             ticket_ids = sorted([x.pk for x in tickets])
             self.assertListEqual(
                 ticket_ids,
                 test_data["expected"],
                 f"""Results don't match for user #{user.pk} {user},
-                    expected {test_data["expected"]}, found {ticket_ids}"""
+                    expected {test_data["expected"]}, found {ticket_ids}""",
             )
 
 
@@ -104,7 +105,7 @@ class ReviewUserManagerTestCase(TestCase):
         ]
         for test_data in expectations:
             user = User.objects.get(pk=test_data["user.pk"])
-            reviews = Review.with_user_manager.own(user)
+            reviews = Review.objects.filter(user=user)
             self.assertIsInstance(reviews, models.QuerySet)
             review_ids = sorted([x.pk for x in reviews])
             self.assertListEqual(
@@ -124,7 +125,7 @@ class ReviewUserManagerTestCase(TestCase):
         ]
         for test_data in expectations:
             user = User.objects.get(pk=test_data["user.pk"])
-            reviews = Review.with_user_manager.own_or_followed(user)
+            reviews = own_or_followed_reviews(user)
             self.assertIsInstance(reviews, models.QuerySet)
             review_ids = sorted([x.pk for x in reviews])
             self.assertListEqual(
@@ -144,45 +145,46 @@ class UserFeedTestCase(TestCase):
         UserFollows.objects.create(user=cecile, followed_user=bob)
 
     def _user_feed(self, user):
-        review_query_set = Review.with_user_manager.own_or_followed(user)
-        ticket_query_set = Ticket.with_user_manager.own_or_followed(user)
+        review_query_set = own_or_followed_reviews(user)
+        ticket_query_set = own_or_followed_tickets(user)
         return sorted(
-            chain(
-                review_query_set,
-                ticket_query_set
-            ),
+            chain(review_query_set, ticket_query_set),
             key=lambda x: x.time_created,
         )
 
     def test_bob_posts_ticket(self):
         """Bob posts a ticket.
-            - Alice should see bob's ticket
+        - Alice should see bob's ticket
         """
         bob = User.objects.get(username="bob")
         alice = User.objects.get(username="alice")
-        bob_ticket = Ticket.objects.create(user=bob, title="Ubik", description="requested by bob")
-        alice_feed = Ticket.with_user_manager.own_or_followed(user=alice)
+        bob_ticket = Ticket.objects.create(
+            user=bob, title="Ubik", description="requested by bob"
+        )
+        alice_feed = own_or_followed_tickets(user=alice)
         self.assertIn(bob_ticket, alice_feed)
 
     def test_cecile_reviews_ticket_from_bob(self):
         """Bob posts a ticket, cecil posts a review for bob's ticket.
-            - Bob should see cecile's review.
-            - Cecile should see bob's ticket.
-            - Alice should see bob's ticket.
-            - Alice should not see cecile's review.
+        - Bob should see cecile's review.
+        - Cecile should see bob's ticket.
+        - Alice should see bob's ticket.
+        - Alice should not see cecile's review.
         """
         bob = User.objects.get(username="bob")
         cecile = User.objects.get(username="cecile")
         alice = User.objects.get(username="alice")
-        bob_ticket = Ticket.objects.create(user=bob, title="Ubik", description="requested by bob")
+        bob_ticket = Ticket.objects.create(
+            user=bob, title="Ubik", description="requested by bob"
+        )
         cecile_review = Review.objects.create(
             user=cecile,
             ticket=bob_ticket,
             rating=5,
             headline="fantastic",
         )
-        bob_feed = Review.with_user_manager.own_or_followed(user=bob)
-        cecile_feed = Ticket.with_user_manager.own_or_followed(user=cecile)
+        bob_feed = own_or_followed_reviews(user=bob)
+        cecile_feed = own_or_followed_tickets(user=cecile)
         self.assertIn(bob_ticket, cecile_feed)
         self.assertIn(cecile_review, bob_feed)
         alice_feed = self._user_feed(alice)
@@ -191,21 +193,24 @@ class UserFeedTestCase(TestCase):
 
     def test_alice_reviews_ticket_from_bob(self):
         """Bob posts a ticket. Alice sees the ticket and posts a review to bob's ticket.
-             - Alice should see bob's ticket
-             - Cecile should see bob's ticket
-             - Bob should see Alice's review
-             - Cecile should not see Alice's review.
+        - Alice should see bob's ticket
+        - Cecile should see bob's ticket
+        - Bob should see Alice's review
+        - Cecile should not see Alice's review.
         """
         bob = User.objects.get(username="bob")
         alice = User.objects.get(username="alice")
         cecile = User.objects.get(username="cecile")
-        bob_ticket = Ticket.objects.create(user=bob, title="Ubik", description="requested by bob")
+        bob_ticket = Ticket.objects.create(
+            user=bob, title="Ubik", description="requested by bob"
+        )
         alice_review = Review.objects.create(
             user=alice,
             ticket=bob_ticket,
             rating=3,
             headline="Not bad",
-            body="alice reviewd bob's ticket, bob should see this review even though he doesn't follow alice.")
+            body="alice reviewd bob's ticket, bob should see this review even though he doesn't follow alice.",
+        )
         bob_feed = self._user_feed(bob)
         alice_feed = self._user_feed(alice)
         cecile_feed = self._user_feed(cecile)
